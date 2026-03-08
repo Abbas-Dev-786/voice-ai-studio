@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Puzzle, ExternalLink, Check } from "lucide-react";
+import { ExternalLink, Check } from "lucide-react";
+import { ConnectIntegrationDialog } from "@/components/dialogs/ConnectIntegrationDialog";
 
 const integrations = [
   { id: "hubspot", name: "HubSpot", description: "Sync contacts and deals with HubSpot CRM", category: "CRM", connected: true, icon: "🔶" },
@@ -13,6 +15,8 @@ const integrations = [
 ];
 
 export default function Integrations() {
+  const [connectTarget, setConnectTarget] = useState<typeof integrations[0] | null>(null);
+
   return (
     <div className="space-y-6">
       <div>
@@ -34,13 +38,24 @@ export default function Integrations() {
               {int.connected && <Check className="h-4 w-4 text-success" />}
             </div>
             <p className="mt-3 text-sm text-muted-foreground">{int.description}</p>
-            <Button variant={int.connected ? "outline" : "default"} size="sm" className="mt-4 w-full">
+            <Button
+              variant={int.connected ? "outline" : "default"}
+              size="sm"
+              className="mt-4 w-full"
+              onClick={() => setConnectTarget(int)}
+            >
               {int.connected ? "Configure" : "Connect"}
               {!int.connected && <ExternalLink className="ml-1 h-3 w-3" />}
             </Button>
           </div>
         ))}
       </div>
+
+      <ConnectIntegrationDialog
+        open={!!connectTarget}
+        onOpenChange={(open) => !open && setConnectTarget(null)}
+        integration={connectTarget}
+      />
     </div>
   );
 }

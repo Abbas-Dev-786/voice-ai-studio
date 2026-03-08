@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Plus, Copy, Trash2, Eye, EyeOff, Key } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
+import { GenerateAPIKeyDialog } from "@/components/dialogs/GenerateAPIKeyDialog";
+import { DeleteConfirmDialog } from "@/components/dialogs/DeleteConfirmDialog";
 
 const apiKeys = [
   { id: "1", name: "Production", key: "vai_prod_sk_1a2b3c4d5e6f7g8h9i0j", created: "Jan 15, 2026", lastUsed: "2 min ago" },
@@ -12,6 +12,8 @@ const apiKeys = [
 
 export default function SettingsAPI() {
   const [visibleKeys, setVisibleKeys] = useState<string[]>([]);
+  const [generateOpen, setGenerateOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const toggleVisibility = (id: string) => {
     setVisibleKeys((prev) => prev.includes(id) ? prev.filter((k) => k !== id) : [...prev, id]);
@@ -26,7 +28,7 @@ export default function SettingsAPI() {
           <h1 className="text-2xl font-bold tracking-tight">API Keys</h1>
           <p className="text-sm text-muted-foreground">Manage API access</p>
         </div>
-        <Button><Plus className="mr-2 h-4 w-4" /> Generate Key</Button>
+        <Button onClick={() => setGenerateOpen(true)}><Plus className="mr-2 h-4 w-4" /> Generate Key</Button>
       </div>
 
       {apiKeys.length > 0 ? (
@@ -48,7 +50,7 @@ export default function SettingsAPI() {
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigator.clipboard.writeText(k.key)}>
                     <Copy className="h-3.5 w-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => setDeleteTarget(k.name)}>
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
@@ -57,7 +59,7 @@ export default function SettingsAPI() {
           ))}
         </div>
       ) : (
-        <EmptyState icon={Key} title="No API keys" description="Generate an API key to integrate with your systems." actionLabel="Generate Key" onAction={() => {}} />
+        <EmptyState icon={Key} title="No API keys" description="Generate an API key to integrate with your systems." actionLabel="Generate Key" onAction={() => setGenerateOpen(true)} />
       )}
 
       <div className="rounded-xl border bg-card p-4 shadow-sm">
@@ -66,6 +68,15 @@ export default function SettingsAPI() {
           <a href="#" className="text-primary hover:underline">API Documentation</a>
         </p>
       </div>
+
+      <GenerateAPIKeyDialog open={generateOpen} onOpenChange={setGenerateOpen} />
+      <DeleteConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Revoke API Key"
+        description={`Are you sure you want to revoke the "${deleteTarget}" key? Any applications using this key will stop working immediately.`}
+        onConfirm={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
-import { Badge } from "@/components/ui/badge";
-import { BookOpen, Plus, Upload, FileText, File, Trash2 } from "lucide-react";
+import { BookOpen, Plus, FileText, File, Trash2 } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
+import { UploadDocumentDialog } from "@/components/dialogs/UploadDocumentDialog";
+import { DeleteConfirmDialog } from "@/components/dialogs/DeleteConfirmDialog";
 
 const documents = [
   { id: "1", name: "Product FAQ.pdf", size: "2.4 MB", pages: 24, status: "live" as const, lastSync: "2 hrs ago" },
@@ -12,6 +14,9 @@ const documents = [
 ];
 
 export default function KnowledgeBase() {
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -19,7 +24,7 @@ export default function KnowledgeBase() {
           <h1 className="text-2xl font-bold tracking-tight">Knowledge Base</h1>
           <p className="text-sm text-muted-foreground">Upload documents for agent reference</p>
         </div>
-        <Button><Plus className="mr-2 h-4 w-4" /> Upload Document</Button>
+        <Button onClick={() => setUploadOpen(true)}><Plus className="mr-2 h-4 w-4" /> Upload Document</Button>
       </div>
 
       {documents.length > 0 ? (
@@ -37,15 +42,24 @@ export default function KnowledgeBase() {
                 <span className="text-xs text-muted-foreground">{doc.lastSync}</span>
                 <StatusBadge status={doc.status} />
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => setDeleteTarget(doc.name)}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           ))}
         </div>
       ) : (
-        <EmptyState icon={BookOpen} title="No documents yet" description="Upload documents that your agents can reference during calls." actionLabel="Upload Document" onAction={() => {}} />
+        <EmptyState icon={BookOpen} title="No documents yet" description="Upload documents that your agents can reference during calls." actionLabel="Upload Document" onAction={() => setUploadOpen(true)} />
       )}
+
+      <UploadDocumentDialog open={uploadOpen} onOpenChange={setUploadOpen} />
+      <DeleteConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Delete Document"
+        description={`Are you sure you want to delete "${deleteTarget}"? This will remove it from all agents' knowledge bases.`}
+        onConfirm={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }
