@@ -125,10 +125,10 @@ export default function AgentPlayground() {
             <details className="rounded-xl border bg-card p-4 shadow-sm">
               <summary className="cursor-pointer text-sm font-medium text-muted-foreground">Agent Thoughts</summary>
               <div className="mt-3 space-y-2 font-mono text-xs text-muted-foreground">
-                <p>[tool_call] calendar.check_availability({"date": "Thursday", "time": "14:00"})</p>
-                <p>[result] Available: true</p>
-                <p>[tool_call] calendar.book({"date": "Thursday", "time": "14:00", "title": "Enterprise Demo"})</p>
-                <p>[result] Booking confirmed, ID: #4521</p>
+                <p>{"[tool_call] calendar.check_availability({date: \"Thursday\", time: \"14:00\"})"}</p>
+                <p>{"[result] Available: true"}</p>
+                <p>{"[tool_call] calendar.book({date: \"Thursday\", time: \"14:00\", title: \"Enterprise Demo\"})"}</p>
+                <p>{"[result] Booking confirmed, ID: #4521"}</p>
               </div>
             </details>
           )}
