@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { StatCard } from "@/components/StatCard";
-import { CreditCard, Phone, Bot, Zap } from "lucide-react";
+import { Phone, Bot, Zap } from "lucide-react";
+import { UpgradePlanDialog } from "@/components/dialogs/UpgradePlanDialog";
 
 const invoices = [
   { date: "Mar 1, 2026", amount: "$99.00", status: "Paid" },
@@ -11,6 +12,8 @@ const invoices = [
 ];
 
 export default function SettingsBilling() {
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+
   return (
     <div className="space-y-6">
       <div>
@@ -27,7 +30,7 @@ export default function SettingsBilling() {
             </div>
             <p className="text-sm text-muted-foreground mt-1">$99/month · Renews Mar 1, 2026</p>
           </div>
-          <Button variant="outline">Upgrade Plan</Button>
+          <Button variant="outline" onClick={() => setUpgradeOpen(true)}>Upgrade Plan</Button>
         </div>
       </div>
 
@@ -68,6 +71,8 @@ export default function SettingsBilling() {
           ))}
         </div>
       </div>
+
+      <UpgradePlanDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
     </div>
   );
 }

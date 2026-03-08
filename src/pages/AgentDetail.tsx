@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/StatusBadge";
 import { DataTable, Column } from "@/components/DataTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronLeft, Play, Settings, History } from "lucide-react";
+import { ChevronLeft, Play, Settings, History, Trash2 } from "lucide-react";
+import { DeleteConfirmDialog } from "@/components/dialogs/DeleteConfirmDialog";
+import { useToast } from "@/hooks/use-toast";
 
 const agentCallHistory = [
   { contact: "+1 (555) 111-2222", duration: "2:34", status: "live" as const, time: "10 min ago" },
@@ -25,6 +28,8 @@ const callColumns: Column<typeof agentCallHistory[0]>[] = [
 export default function AgentDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { toast } = useToast();
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -44,6 +49,9 @@ export default function AgentDetail() {
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate(`/agents/${id}/playground`)}>
             <Play className="mr-2 h-4 w-4" /> Test
+          </Button>
+          <Button variant="destructive" size="icon" onClick={() => setDeleteOpen(true)}>
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -73,7 +81,9 @@ export default function AgentDetail() {
             />
           </div>
           <div className="flex justify-end">
-            <Button>Save Changes</Button>
+            <Button onClick={() => toast({ title: "Changes saved", description: "Agent settings have been updated." })}>
+              Save Changes
+            </Button>
           </div>
         </TabsContent>
 
@@ -81,6 +91,14 @@ export default function AgentDetail() {
           <DataTable columns={callColumns} data={agentCallHistory} searchKey="contact" searchPlaceholder="Search calls..." />
         </TabsContent>
       </Tabs>
+
+      <DeleteConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete Agent"
+        description="Are you sure you want to delete Sales Bot? This will stop all active campaigns using this agent. This action cannot be undone."
+        onConfirm={() => { setDeleteOpen(false); navigate("/agents"); }}
+      />
     </div>
   );
 }

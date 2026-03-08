@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { DataTable, Column } from "@/components/DataTable";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Plus, Bot } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
+import { DeleteConfirmDialog } from "@/components/dialogs/DeleteConfirmDialog";
 
 const agents = [
   { id: "1", name: "Sales Bot", status: "live" as const, calls: 1284, successRate: "94.2%", lastActive: "2 min ago" },

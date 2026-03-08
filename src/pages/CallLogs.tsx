@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DataTable, Column } from "@/components/DataTable";
 import { StatusBadge } from "@/components/StatusBadge";
-import { PhoneCall } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { PhoneCall, Download } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
+import { ExportDataDialog } from "@/components/dialogs/ExportDataDialog";
 
 const calls = [
   { id: "1", contact: "+1 (555) 123-4567", agent: "Sales Bot", direction: "Outbound", duration: "3:42", status: "live" as const, cost: "$0.12", time: "2 min ago" },
@@ -27,12 +30,18 @@ const columns: Column<typeof calls[0]>[] = [
 
 export default function CallLogs() {
   const navigate = useNavigate();
+  const [exportOpen, setExportOpen] = useState(false);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Call Logs</h1>
-        <p className="text-sm text-muted-foreground">Browse all call records</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Call Logs</h1>
+          <p className="text-sm text-muted-foreground">Browse all call records</p>
+        </div>
+        <Button variant="outline" onClick={() => setExportOpen(true)}>
+          <Download className="mr-2 h-4 w-4" /> Export
+        </Button>
       </div>
 
       {calls.length > 0 ? (
@@ -40,6 +49,8 @@ export default function CallLogs() {
       ) : (
         <EmptyState icon={PhoneCall} title="No calls yet" description="Call logs will appear here once your agents start making calls." />
       )}
+
+      <ExportDataDialog open={exportOpen} onOpenChange={setExportOpen} title="Export Call Logs" description="Download call records in your preferred format." />
     </div>
   );
 }

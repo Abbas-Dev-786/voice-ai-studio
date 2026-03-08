@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Plus, Trash2, Mail } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
+import { InviteTeamMemberDialog } from "@/components/dialogs/InviteTeamMemberDialog";
+import { DeleteConfirmDialog } from "@/components/dialogs/DeleteConfirmDialog";
 
 const members = [
   { name: "John Doe", email: "john@acme.com", role: "Admin", initials: "JD" },
@@ -13,6 +16,9 @@ const members = [
 ];
 
 export default function SettingsTeam() {
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -20,25 +26,7 @@ export default function SettingsTeam() {
           <h1 className="text-2xl font-bold tracking-tight">Team & Members</h1>
           <p className="text-sm text-muted-foreground">Manage team access</p>
         </div>
-        <Button><Plus className="mr-2 h-4 w-4" /> Invite Member</Button>
-      </div>
-
-      <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm space-y-4">
-        <h3 className="font-semibold">Invite by Email</h3>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex-1 space-y-2">
-            <Input placeholder="email@company.com" type="email" />
-          </div>
-          <Select defaultValue="editor">
-            <SelectTrigger className="w-full sm:w-[130px]"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="admin">Admin</SelectItem>
-              <SelectItem value="editor">Editor</SelectItem>
-              <SelectItem value="viewer">Viewer</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button><Mail className="mr-2 h-4 w-4" /> Send</Button>
-        </div>
+        <Button onClick={() => setInviteOpen(true)}><Plus className="mr-2 h-4 w-4" /> Invite Member</Button>
       </div>
 
       <div className="space-y-3">
@@ -52,12 +40,21 @@ export default function SettingsTeam() {
               <p className="text-sm text-muted-foreground truncate">{m.email}</p>
             </div>
             <Badge variant="secondary">{m.role}</Badge>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => setDeleteTarget(m.name)}>
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         ))}
       </div>
+
+      <InviteTeamMemberDialog open={inviteOpen} onOpenChange={setInviteOpen} />
+      <DeleteConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Remove Team Member"
+        description={`Are you sure you want to remove ${deleteTarget} from the team? They will lose access immediately.`}
+        onConfirm={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }
