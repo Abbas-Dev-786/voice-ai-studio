@@ -11,6 +11,7 @@ export interface Column<T> {
   label: string;
   sortable?: boolean;
   render?: (row: T) => React.ReactNode;
+  hideOnMobile?: boolean;
 }
 
 interface DataTableProps<T> {
@@ -59,19 +60,22 @@ export function DataTable<T extends Record<string, any>>({
           />
         </div>
       )}
-      <div className="rounded-lg border">
+      <div className="rounded-xl border shadow-sm overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/50">
+            <TableRow className="bg-muted/40 hover:bg-muted/40">
               {columns.map((col) => (
                 <TableHead
                   key={col.key}
-                  className={cn(col.sortable && "cursor-pointer select-none")}
+                  className={cn(
+                    col.sortable && "cursor-pointer select-none",
+                    col.hideOnMobile && "hidden sm:table-cell"
+                  )}
                   onClick={() => col.sortable && toggleSort(col.key)}
                 >
-                  <span className="inline-flex items-center gap-1">
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider">
                     {col.label}
-                    {col.sortable && <ArrowUpDown className="h-3 w-3 text-muted-foreground" />}
+                    {col.sortable && <ArrowUpDown className="h-3 w-3 text-muted-foreground/60" />}
                   </span>
                 </TableHead>
               ))}
@@ -81,11 +85,17 @@ export function DataTable<T extends Record<string, any>>({
             {sorted.map((row, i) => (
               <TableRow
                 key={i}
-                className={cn(onRowClick && "cursor-pointer")}
+                className={cn(
+                  onRowClick && "cursor-pointer",
+                  "transition-colors hover:bg-accent/50"
+                )}
                 onClick={() => onRowClick?.(row)}
               >
                 {columns.map((col) => (
-                  <TableCell key={col.key}>
+                  <TableCell
+                    key={col.key}
+                    className={cn(col.hideOnMobile && "hidden sm:table-cell")}
+                  >
                     {col.render ? col.render(row) : row[col.key]}
                   </TableCell>
                 ))}

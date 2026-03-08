@@ -18,9 +18,9 @@ const recentCalls = [
 const callColumns: Column<typeof recentCalls[0]>[] = [
   { key: "contact", label: "Contact", sortable: true, render: (r) => <span className="font-mono text-sm">{r.contact}</span> },
   { key: "agent", label: "Agent", sortable: true },
-  { key: "duration", label: "Duration", sortable: true, render: (r) => <span className="font-mono text-sm">{r.duration}</span> },
+  { key: "duration", label: "Duration", sortable: true, hideOnMobile: true, render: (r) => <span className="font-mono text-sm">{r.duration}</span> },
   { key: "status", label: "Status", render: (r) => <StatusBadge status={r.status} /> },
-  { key: "time", label: "Time", sortable: true },
+  { key: "time", label: "Time", sortable: true, hideOnMobile: true },
 ];
 
 const activeAgents = [
@@ -34,12 +34,12 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-sm text-muted-foreground">Overview of your voice AI operations</p>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Calls Today"
           value="1,284"
@@ -74,7 +74,7 @@ export default function Dashboard() {
           <h2 className="mb-4 text-lg font-semibold">Active Agents</h2>
           <div className="space-y-3">
             {activeAgents.map((agent) => (
-              <div key={agent.name} className="flex items-center justify-between rounded-lg border bg-card p-4">
+              <div key={agent.name} className="flex items-center justify-between rounded-xl border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
                 <div>
                   <p className="font-medium">{agent.name}</p>
                   <p className="text-sm text-muted-foreground">{agent.calls} calls today</p>
@@ -87,12 +87,12 @@ export default function Dashboard() {
       </div>
 
       {/* Usage bar */}
-      <div className="flex items-center justify-between rounded-lg border bg-card p-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border bg-card p-4 shadow-sm">
         <div className="flex-1">
-          <p className="text-sm font-medium">You have used <span className="text-primary">1,250</span> of <span className="font-semibold">5,000</span> calls this month</p>
+          <p className="text-sm font-medium">You have used <span className="text-primary font-semibold">1,250</span> of <span className="font-semibold">5,000</span> calls this month</p>
           <Progress value={25} className="mt-2 h-2 max-w-md" />
         </div>
-        <a href="/settings/billing" className="text-sm font-medium text-primary hover:underline">
+        <a href="/settings/billing" className="text-sm font-medium text-primary hover:underline whitespace-nowrap">
           Upgrade Plan →
         </a>
       </div>

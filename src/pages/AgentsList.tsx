@@ -15,9 +15,9 @@ const agents = [
 const columns: Column<typeof agents[0]>[] = [
   { key: "name", label: "Agent Name", sortable: true, render: (r) => <span className="font-medium">{r.name}</span> },
   { key: "status", label: "Status", render: (r) => <StatusBadge status={r.status} /> },
-  { key: "calls", label: "Total Calls", sortable: true },
-  { key: "successRate", label: "Success Rate", sortable: true },
-  { key: "lastActive", label: "Last Active", sortable: true },
+  { key: "calls", label: "Total Calls", sortable: true, hideOnMobile: true },
+  { key: "successRate", label: "Success Rate", sortable: true, hideOnMobile: true },
+  { key: "lastActive", label: "Last Active", sortable: true, hideOnMobile: true },
 ];
 
 export default function AgentsList() {
@@ -26,9 +26,9 @@ export default function AgentsList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Agents</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Agents</h1>
           <p className="text-sm text-muted-foreground">Manage your voice AI agents</p>
         </div>
         <Button onClick={() => navigate("/agents/new")}>
