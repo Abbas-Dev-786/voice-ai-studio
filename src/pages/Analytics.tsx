@@ -58,7 +58,7 @@ export default function Analytics() {
               <BarChart data={costData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="date" className="text-xs" tick={{ fill: 'hsl(220 10% 46%)' }} />
-                <YAxis className="text-xs" tick={{ fill: 'hsl(220 10% 46%)' }} prefix="$" />
+                <YAxis className="text-xs" tick={{ fill: 'hsl(220 10% 46%)' }} tickFormatter={(v) => `$${v}`} />
                 <Tooltip contentStyle={{ backgroundColor: 'hsl(0 0% 100%)', border: '1px solid hsl(30 15% 90%)', borderRadius: '8px' }} />
                 <Bar dataKey="telephony" fill="hsl(15 90% 55% / 0.7)" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="ai" fill="hsl(15 90% 55%)" radius={[4, 4, 0, 0]} />
