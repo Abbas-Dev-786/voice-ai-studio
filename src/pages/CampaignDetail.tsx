@@ -18,6 +18,7 @@ import { BuyPhoneNumberDialog } from "@/components/dialogs/BuyPhoneNumberDialog"
 import { UploadDocumentDialog } from "@/components/dialogs/UploadDocumentDialog";
 import { ConnectIntegrationDialog } from "@/components/dialogs/ConnectIntegrationDialog";
 import { CreateAgentDialog } from "@/components/dialogs/CreateAgentDialog";
+import { UploadContactsDialog } from "@/components/dialogs/UploadContactsDialog";
 import { DeleteConfirmDialog } from "@/components/dialogs/DeleteConfirmDialog";
 import { ExportDataDialog } from "@/components/dialogs/ExportDataDialog";
 import {
@@ -198,6 +199,7 @@ export default function CampaignDetail() {
   const [buyNumberOpen, setBuyNumberOpen] = useState(false);
   const [uploadDocOpen, setUploadDocOpen] = useState(false);
   const [createAgentOpen, setCreateAgentOpen] = useState(false);
+  const [uploadContactsOpen, setUploadContactsOpen] = useState(false);
   const [connectIntOpen, setConnectIntOpen] = useState(false);
   const [connectTarget, setConnectTarget] = useState<any>(null);
   const [exportOpen, setExportOpen] = useState(false);
@@ -468,7 +470,7 @@ export default function CampaignDetail() {
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm"><Download className="mr-1.5 h-3.5 w-3.5" /> Export</Button>
-              <Button size="sm"><Upload className="mr-1.5 h-3.5 w-3.5" /> Upload CSV</Button>
+              <Button size="sm" onClick={() => setUploadContactsOpen(true)}><Upload className="mr-1.5 h-3.5 w-3.5" /> Upload CSV</Button>
             </div>
           </div>
 
@@ -879,6 +881,7 @@ export default function CampaignDetail() {
       <BuyPhoneNumberDialog open={buyNumberOpen} onOpenChange={(open) => { setBuyNumberOpen(open); if (!open && buyNumberOpen) toast({ title: "Phone number purchased", description: "The number has been added to this campaign." }); }} />
       <UploadDocumentDialog open={uploadDocOpen} onOpenChange={(open) => { setUploadDocOpen(open); if (!open && uploadDocOpen) toast({ title: "Document uploaded", description: "Knowledge base has been updated." }); }} />
       <CreateAgentDialog open={createAgentOpen} onOpenChange={setCreateAgentOpen} onCreated={(agent) => toast({ title: "Agent created", description: `${agent.name} has been added to this campaign.` })} />
+      <UploadContactsDialog open={uploadContactsOpen} onOpenChange={setUploadContactsOpen} onImported={(count) => toast({ title: "Contacts imported", description: `${count} contacts have been added to this campaign.` })} />
       <ConnectIntegrationDialog open={connectIntOpen} onOpenChange={(open) => { setConnectIntOpen(open); if (!open && connectIntOpen) toast({ title: "Integration updated", description: `${connectTarget?.name || "Integration"} configuration saved.` }); }} integration={connectTarget} />
       <ExportDataDialog open={exportOpen} onOpenChange={setExportOpen} title="Export Campaign Data" description="Download campaign data in your preferred format." />
       <DeleteConfirmDialog
