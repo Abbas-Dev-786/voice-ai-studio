@@ -874,23 +874,23 @@ export default function CampaignDetail() {
       )}
 
       {/* ── Dialogs ─────────────────────────── */}
-      <BuyPhoneNumberDialog open={buyNumberOpen} onOpenChange={setBuyNumberOpen} />
-      <UploadDocumentDialog open={uploadDocOpen} onOpenChange={setUploadDocOpen} />
-      <ConnectIntegrationDialog open={connectIntOpen} onOpenChange={setConnectIntOpen} integration={connectTarget} />
+      <BuyPhoneNumberDialog open={buyNumberOpen} onOpenChange={(open) => { setBuyNumberOpen(open); if (!open && buyNumberOpen) toast({ title: "Phone number purchased", description: "The number has been added to this campaign." }); }} />
+      <UploadDocumentDialog open={uploadDocOpen} onOpenChange={(open) => { setUploadDocOpen(open); if (!open && uploadDocOpen) toast({ title: "Document uploaded", description: "Knowledge base has been updated." }); }} />
+      <ConnectIntegrationDialog open={connectIntOpen} onOpenChange={(open) => { setConnectIntOpen(open); if (!open && connectIntOpen) toast({ title: "Integration updated", description: `${connectTarget?.name || "Integration"} configuration saved.` }); }} integration={connectTarget} />
       <ExportDataDialog open={exportOpen} onOpenChange={setExportOpen} title="Export Campaign Data" description="Download campaign data in your preferred format." />
       <DeleteConfirmDialog
         open={deleteTarget === "campaign"}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         title="Delete Campaign"
         description="Are you sure you want to delete this campaign? This will remove all agents, contacts, call logs, and integrations associated with it. This action cannot be undone."
-        onConfirm={() => { setDeleteTarget(null); navigate("/campaigns"); }}
+        onConfirm={() => { setDeleteTarget(null); toast({ title: "Campaign deleted", description: "The campaign has been permanently removed." }); navigate("/campaigns"); }}
       />
       <DeleteConfirmDialog
         open={!!deleteTarget && deleteTarget !== "campaign"}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         title="Remove Document"
         description={`Are you sure you want to remove "${deleteTarget}" from this campaign's knowledge base?`}
-        onConfirm={() => setDeleteTarget(null)}
+        onConfirm={() => { toast({ title: "Document removed", description: `"${deleteTarget}" has been removed from the knowledge base.` }); setDeleteTarget(null); }}
       />
     </div>
   );
