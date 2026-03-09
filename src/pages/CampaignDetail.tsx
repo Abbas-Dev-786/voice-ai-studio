@@ -881,6 +881,7 @@ export default function CampaignDetail() {
       <BuyPhoneNumberDialog open={buyNumberOpen} onOpenChange={(open) => { setBuyNumberOpen(open); if (!open && buyNumberOpen) toast({ title: "Phone number purchased", description: "The number has been added to this campaign." }); }} />
       <UploadDocumentDialog open={uploadDocOpen} onOpenChange={(open) => { setUploadDocOpen(open); if (!open && uploadDocOpen) toast({ title: "Document uploaded", description: "Knowledge base has been updated." }); }} />
       <CreateAgentDialog open={createAgentOpen} onOpenChange={setCreateAgentOpen} onCreated={(agent) => toast({ title: "Agent created", description: `${agent.name} has been added to this campaign.` })} />
+      <UploadContactsDialog open={uploadContactsOpen} onOpenChange={setUploadContactsOpen} onImported={(count) => toast({ title: "Contacts imported", description: `${count} contacts have been added to this campaign.` })} />
       <ConnectIntegrationDialog open={connectIntOpen} onOpenChange={(open) => { setConnectIntOpen(open); if (!open && connectIntOpen) toast({ title: "Integration updated", description: `${connectTarget?.name || "Integration"} configuration saved.` }); }} integration={connectTarget} />
       <ExportDataDialog open={exportOpen} onOpenChange={setExportOpen} title="Export Campaign Data" description="Download campaign data in your preferred format." />
       <DeleteConfirmDialog
