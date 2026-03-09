@@ -1,6 +1,6 @@
 import {
-  LayoutDashboard, BarChart3, Bot, Megaphone, PhoneCall, Phone, BookOpen,
-  Puzzle, Settings,
+  LayoutDashboard, BarChart3, Megaphone, PhoneCall, Phone, BookOpen,
+  Puzzle, Settings, Bot,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -13,25 +13,15 @@ const navGroups = [
     label: "Main",
     items: [
       { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+      { title: "Campaigns", url: "/campaigns", icon: Megaphone },
       { title: "Analytics", url: "/analytics", icon: BarChart3 },
     ],
   },
   {
-    label: "Agents",
+    label: "Resources",
     items: [
-      { title: "All Agents", url: "/agents", icon: Bot },
-    ],
-  },
-  {
-    label: "Outreach",
-    items: [
-      { title: "Campaigns", url: "/campaigns", icon: Megaphone },
+      { title: "Agents", url: "/agents", icon: Bot },
       { title: "Call Logs", url: "/calls", icon: PhoneCall },
-    ],
-  },
-  {
-    label: "Configuration",
-    items: [
       { title: "Phone Numbers", url: "/phone-numbers", icon: Phone },
       { title: "Knowledge Base", url: "/knowledge", icon: BookOpen },
       { title: "Integrations", url: "/integrations", icon: Puzzle },

@@ -1,36 +1,33 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/StatusBadge";
-import { BookOpen, Plus, FileText, File, Trash2 } from "lucide-react";
+import { BookOpen, FileText, File } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
-import { UploadDocumentDialog } from "@/components/dialogs/UploadDocumentDialog";
-import { DeleteConfirmDialog } from "@/components/dialogs/DeleteConfirmDialog";
 
 const documents = [
-  { id: "1", name: "Product FAQ.pdf", size: "2.4 MB", pages: 24, status: "live" as const, lastSync: "2 hrs ago" },
-  { id: "2", name: "Pricing Guide.docx", size: "1.1 MB", pages: 8, status: "live" as const, lastSync: "1 day ago" },
-  { id: "3", name: "Onboarding Script.txt", size: "45 KB", pages: 3, status: "live" as const, lastSync: "3 days ago" },
-  { id: "4", name: "New Features 2026.pdf", size: "3.8 MB", pages: 15, status: "paused" as const, lastSync: "Syncing..." },
+  { id: "1", name: "Product Overview 2024.pdf", size: "2.4 MB", pages: 32, campaign: "Q1 Outreach", status: "live" as const, lastSync: "2 hrs ago" },
+  { id: "2", name: "Pricing & Plans.pdf", size: "850 KB", pages: 8, campaign: "Q1 Outreach", status: "live" as const, lastSync: "1 day ago" },
+  { id: "3", name: "FAQ Database", size: "1.1 MB", pages: 156, campaign: "Q1 Outreach", status: "live" as const, lastSync: "3 days ago" },
+  { id: "4", name: "Launch Guide.docx", size: "3.8 MB", pages: 15, campaign: "Product Launch", status: "live" as const, lastSync: "5 hrs ago" },
+  { id: "5", name: "Survey Questions.txt", size: "45 KB", pages: 3, campaign: "Survey Q1", status: "paused" as const, lastSync: "Syncing..." },
 ];
 
 export default function KnowledgeBase() {
-  const [uploadOpen, setUploadOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Knowledge Base</h1>
-          <p className="text-sm text-muted-foreground">Upload documents for agent reference</p>
+          <p className="text-sm text-muted-foreground">All documents across your campaigns. Upload & manage within each campaign.</p>
         </div>
-        <Button onClick={() => setUploadOpen(true)}><Plus className="mr-2 h-4 w-4" /> Upload Document</Button>
       </div>
 
       {documents.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {documents.map((doc) => (
-            <div key={doc.id} className="flex items-center gap-4 rounded-xl border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
+            <div key={doc.id} className="flex items-center gap-4 rounded-xl border bg-card p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
               <div className="rounded-lg bg-primary/10 p-2.5">
                 {doc.name.endsWith(".pdf") ? <FileText className="h-5 w-5 text-primary" /> : <File className="h-5 w-5 text-primary" />}
               </div>
@@ -39,27 +36,16 @@ export default function KnowledgeBase() {
                 <p className="text-xs text-muted-foreground">{doc.size} · {doc.pages} pages</p>
               </div>
               <div className="hidden sm:flex items-center gap-3">
+                <Badge variant="secondary" className="text-xs font-normal">{doc.campaign}</Badge>
                 <span className="text-xs text-muted-foreground">{doc.lastSync}</span>
                 <StatusBadge status={doc.status} />
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => setDeleteTarget(doc.name)}>
-                <Trash2 className="h-4 w-4" />
-              </Button>
             </div>
           ))}
         </div>
       ) : (
-        <EmptyState icon={BookOpen} title="No documents yet" description="Upload documents that your agents can reference during calls." actionLabel="Upload Document" onAction={() => setUploadOpen(true)} />
+        <EmptyState icon={BookOpen} title="No documents yet" description="Upload documents within a campaign." actionLabel="Go to Campaigns" onAction={() => navigate("/campaigns")} />
       )}
-
-      <UploadDocumentDialog open={uploadOpen} onOpenChange={setUploadOpen} />
-      <DeleteConfirmDialog
-        open={!!deleteTarget}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Delete Document"
-        description={`Are you sure you want to delete "${deleteTarget}"? This will remove it from all agents' knowledge bases.`}
-        onConfirm={() => setDeleteTarget(null)}
-      />
     </div>
   );
 }
