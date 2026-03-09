@@ -190,6 +190,7 @@ InfoRow.displayName = "InfoRow";
 
 export default function CampaignDetail() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { id } = useParams();
   const [isPaused, setIsPaused] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
