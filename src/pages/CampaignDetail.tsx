@@ -622,7 +622,7 @@ export default function CampaignDetail() {
               <h2 className="text-lg font-semibold">Integrations</h2>
               <p className="text-sm text-muted-foreground">{campaignIntegrations.filter(i => i.status !== "Inactive").length} active integrations for this campaign</p>
             </div>
-            <Button size="sm" onClick={() => { setConnectTarget({ name: "", icon: "", description: "" }); setConnectIntOpen(true); }}>
+            <Button size="sm" onClick={() => { const inactive = campaignIntegrations.find(i => i.status === "Inactive"); setConnectTarget(inactive || campaignIntegrations[0]); setConnectIntOpen(true); }}>
               <Plus className="mr-1.5 h-3.5 w-3.5" /> Add Integration
             </Button>
           </div>
