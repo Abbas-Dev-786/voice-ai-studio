@@ -208,6 +208,14 @@ export default function CampaignDetail() {
     dnc: true, record: true, tcpa: true, voicemailDetect: true, leaveVoicemail: false,
   });
 
+  // Contact management state
+  const [contacts, setContacts] = useState(initialContacts);
+  const [editingContactId, setEditingContactId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "" });
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newContact, setNewContact] = useState({ name: "", phone: "", email: "" });
+  const [contactSearch, setContactSearch] = useState("");
+
   const outcomes = [
     { label: "Booked Demo", count: 285, pct: 34, icon: UserCheck, color: "text-success" },
     { label: "Interested", count: 189, pct: 22, icon: TrendingUp, color: "text-primary" },
