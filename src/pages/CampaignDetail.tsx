@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/StatCard";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -175,19 +176,21 @@ const tabs = [
 
 /* ── Helpers ───────────────────────────────────────────── */
 
-function InfoRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
-  return (
-    <div className="flex items-center justify-between py-2">
+const InfoRow = forwardRef<HTMLDivElement, { label: string; value: string; mono?: boolean }>(
+  ({ label, value, mono }, ref) => (
+    <div ref={ref} className="flex items-center justify-between py-2">
       <span className="text-sm text-muted-foreground">{label}</span>
       <span className={cn("text-sm font-medium", mono && "font-mono")}>{value}</span>
     </div>
-  );
-}
+  )
+);
+InfoRow.displayName = "InfoRow";
 
 /* ── Component ─────────────────────────────────────────── */
 
 export default function CampaignDetail() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { id } = useParams();
   const [isPaused, setIsPaused] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -619,7 +622,7 @@ export default function CampaignDetail() {
               <h2 className="text-lg font-semibold">Integrations</h2>
               <p className="text-sm text-muted-foreground">{campaignIntegrations.filter(i => i.status !== "Inactive").length} active integrations for this campaign</p>
             </div>
-            <Button size="sm" onClick={() => { setConnectTarget({ name: "", icon: "", description: "" }); setConnectIntOpen(true); }}>
+            <Button size="sm" onClick={() => { const inactive = campaignIntegrations.find(i => i.status === "Inactive"); setConnectTarget(inactive || campaignIntegrations[0]); setConnectIntOpen(true); }}>
               <Plus className="mr-1.5 h-3.5 w-3.5" /> Add Integration
             </Button>
           </div>
@@ -871,23 +874,23 @@ export default function CampaignDetail() {
       )}
 
       {/* ── Dialogs ─────────────────────────── */}
-      <BuyPhoneNumberDialog open={buyNumberOpen} onOpenChange={setBuyNumberOpen} />
-      <UploadDocumentDialog open={uploadDocOpen} onOpenChange={setUploadDocOpen} />
-      <ConnectIntegrationDialog open={connectIntOpen} onOpenChange={setConnectIntOpen} integration={connectTarget} />
+      <BuyPhoneNumberDialog open={buyNumberOpen} onOpenChange={(open) => { setBuyNumberOpen(open); if (!open && buyNumberOpen) toast({ title: "Phone number purchased", description: "The number has been added to this campaign." }); }} />
+      <UploadDocumentDialog open={uploadDocOpen} onOpenChange={(open) => { setUploadDocOpen(open); if (!open && uploadDocOpen) toast({ title: "Document uploaded", description: "Knowledge base has been updated." }); }} />
+      <ConnectIntegrationDialog open={connectIntOpen} onOpenChange={(open) => { setConnectIntOpen(open); if (!open && connectIntOpen) toast({ title: "Integration updated", description: `${connectTarget?.name || "Integration"} configuration saved.` }); }} integration={connectTarget} />
       <ExportDataDialog open={exportOpen} onOpenChange={setExportOpen} title="Export Campaign Data" description="Download campaign data in your preferred format." />
       <DeleteConfirmDialog
         open={deleteTarget === "campaign"}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         title="Delete Campaign"
         description="Are you sure you want to delete this campaign? This will remove all agents, contacts, call logs, and integrations associated with it. This action cannot be undone."
-        onConfirm={() => { setDeleteTarget(null); navigate("/campaigns"); }}
+        onConfirm={() => { setDeleteTarget(null); toast({ title: "Campaign deleted", description: "The campaign has been permanently removed." }); navigate("/campaigns"); }}
       />
       <DeleteConfirmDialog
         open={!!deleteTarget && deleteTarget !== "campaign"}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         title="Remove Document"
         description={`Are you sure you want to remove "${deleteTarget}" from this campaign's knowledge base?`}
-        onConfirm={() => setDeleteTarget(null)}
+        onConfirm={() => { toast({ title: "Document removed", description: `"${deleteTarget}" has been removed from the knowledge base.` }); setDeleteTarget(null); }}
       />
     </div>
   );
