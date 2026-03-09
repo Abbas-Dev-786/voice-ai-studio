@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/StatCard";
 import { StatusBadge } from "@/components/StatusBadge";
 import { DataTable, Column } from "@/components/DataTable";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -80,7 +81,7 @@ const agentColumns: Column<typeof campaignAgents[0]>[] = [
   { key: "successRate", label: "Success", hideOnMobile: true },
 ];
 
-const contacts = [
+const initialContacts = [
   { id: "1", name: "Sarah Johnson", phone: "+1 (555) 101-0101", email: "sarah@example.com", status: "called" as const, outcome: "Booked demo", lastCall: "5 min ago" },
   { id: "2", name: "Mike Chen", phone: "+1 (555) 202-0202", email: "mike@example.com", status: "called" as const, outcome: "Interested", lastCall: "12 min ago" },
   { id: "3", name: "Lisa Park", phone: "+1 (555) 303-0303", email: "lisa@example.com", status: "failed" as const, outcome: "No answer", lastCall: "15 min ago" },
@@ -89,20 +90,7 @@ const contacts = [
   { id: "6", name: "Tom Brown", phone: "+1 (555) 606-0606", email: "tom@example.com", status: "called" as const, outcome: "Booked demo", lastCall: "30 min ago" },
 ];
 
-const contactColumns: Column<typeof contacts[0]>[] = [
-  { key: "name", label: "Name", sortable: true, render: (r) => <span className="font-medium">{r.name}</span> },
-  { key: "phone", label: "Phone", hideOnMobile: true, render: (r) => <span className="font-mono text-xs">{r.phone}</span> },
-  { key: "email", label: "Email", hideOnMobile: true, render: (r) => <span className="text-xs text-muted-foreground">{r.email}</span> },
-  { key: "status", label: "Status", render: (r) => (
-    <Badge variant="secondary" className={cn("text-xs capitalize",
-      r.status === "called" && "bg-success/10 text-success",
-      r.status === "failed" && "bg-destructive/10 text-destructive",
-      r.status === "pending" && "bg-muted text-muted-foreground",
-    )}>{r.status}</Badge>
-  )},
-  { key: "outcome", label: "Outcome", hideOnMobile: true },
-  { key: "lastCall", label: "Last Call", hideOnMobile: true },
-];
+type ContactType = typeof initialContacts[number];
 
 const phoneNumbers = [
   { id: "1", number: "+1 (555) 100-2000", label: "Primary Outbound", type: "Local", callsMade: 642, status: "live" as const },
@@ -207,6 +195,14 @@ export default function CampaignDetail() {
   const [compliance, setCompliance] = useState({
     dnc: true, record: true, tcpa: true, voicemailDetect: true, leaveVoicemail: false,
   });
+
+  // Contact management state
+  const [contacts, setContacts] = useState(initialContacts);
+  const [editingContactId, setEditingContactId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "" });
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newContact, setNewContact] = useState({ name: "", phone: "", email: "" });
+  const [contactSearch, setContactSearch] = useState("");
 
   const outcomes = [
     { label: "Booked Demo", count: 285, pct: 34, icon: UserCheck, color: "text-success" },
@@ -470,17 +466,18 @@ export default function CampaignDetail() {
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm"><Download className="mr-1.5 h-3.5 w-3.5" /> Export</Button>
-              <Button size="sm" onClick={() => setUploadContactsOpen(true)}><Upload className="mr-1.5 h-3.5 w-3.5" /> Upload CSV</Button>
+              <Button variant="outline" size="sm" onClick={() => setUploadContactsOpen(true)}><Upload className="mr-1.5 h-3.5 w-3.5" /> Upload CSV</Button>
+              <Button size="sm" onClick={() => setShowAddForm(true)}><UserPlus className="mr-1.5 h-3.5 w-3.5" /> Add Contact</Button>
             </div>
           </div>
 
           {/* Quick stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: "Total", value: campaignSettings.contactListSize, color: "" },
-              { label: "Called", value: contacts.filter(c => c.status === "called").length * 200, color: "text-success" },
-              { label: "Failed", value: contacts.filter(c => c.status === "failed").length * 50, color: "text-destructive" },
-              { label: "Pending", value: campaignSettings.contactsRemaining, color: "text-muted-foreground" },
+              { label: "Total", value: contacts.length, color: "" },
+              { label: "Called", value: contacts.filter(c => c.status === "called").length, color: "text-success" },
+              { label: "Failed", value: contacts.filter(c => c.status === "failed").length, color: "text-destructive" },
+              { label: "Pending", value: contacts.filter(c => c.status === "pending").length, color: "text-muted-foreground" },
             ].map((s) => (
               <Card key={s.label} className="p-3 text-center">
                 <p className={cn("text-xl font-bold", s.color)}>{s.value}</p>
@@ -489,12 +486,148 @@ export default function CampaignDetail() {
             ))}
           </div>
 
-          <DataTable
-            columns={contactColumns}
-            data={contacts}
-            searchKey="name"
-            searchPlaceholder="Search contacts..."
-          />
+          {/* Add Contact Inline Form */}
+          {showAddForm && (
+            <Card className="border-primary/30 bg-primary/5">
+              <CardContent className="pt-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <UserPlus className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold">Add New Contact</h3>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Name *</Label>
+                    <Input placeholder="John Doe" value={newContact.name} onChange={(e) => setNewContact(p => ({ ...p, name: e.target.value }))} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Phone *</Label>
+                    <Input placeholder="+1 (555) 000-0000" value={newContact.phone} onChange={(e) => setNewContact(p => ({ ...p, phone: e.target.value }))} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Email</Label>
+                    <Input placeholder="john@example.com" value={newContact.email} onChange={(e) => setNewContact(p => ({ ...p, email: e.target.value }))} />
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-3">
+                  <Button size="sm" onClick={() => {
+                    if (!newContact.name.trim() || !newContact.phone.trim()) {
+                      toast({ title: "Missing fields", description: "Name and phone are required.", variant: "destructive" });
+                      return;
+                    }
+                    const added: ContactType = {
+                      id: String(Date.now()),
+                      name: newContact.name.trim(),
+                      phone: newContact.phone.trim(),
+                      email: newContact.email.trim() || "—",
+                      status: "pending",
+                      outcome: "—",
+                      lastCall: "—",
+                    };
+                    setContacts(prev => [added, ...prev]);
+                    setNewContact({ name: "", phone: "", email: "" });
+                    setShowAddForm(false);
+                    toast({ title: "Contact added", description: `${added.name} has been added to the list.` });
+                  }}>
+                    <CheckCircle className="mr-1.5 h-3.5 w-3.5" /> Save
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => { setShowAddForm(false); setNewContact({ name: "", phone: "", email: "" }); }}>Cancel</Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Search */}
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input placeholder="Search contacts..." value={contactSearch} onChange={(e) => setContactSearch(e.target.value)} className="pl-9" />
+          </div>
+
+          {/* Contacts Table with Inline Editing */}
+          <div className="rounded-xl border shadow-sm overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/40 hover:bg-muted/40">
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider">Name</TableHead>
+                  <TableHead className="hidden sm:table-cell text-xs font-semibold uppercase tracking-wider">Phone</TableHead>
+                  <TableHead className="hidden sm:table-cell text-xs font-semibold uppercase tracking-wider">Email</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider">Status</TableHead>
+                  <TableHead className="hidden sm:table-cell text-xs font-semibold uppercase tracking-wider">Outcome</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider w-[100px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {contacts
+                  .filter(c => c.name.toLowerCase().includes(contactSearch.toLowerCase()) || c.phone.includes(contactSearch) || c.email.toLowerCase().includes(contactSearch.toLowerCase()))
+                  .map((contact) => (
+                  <TableRow key={contact.id} className="transition-colors hover:bg-accent/50">
+                    {editingContactId === contact.id ? (
+                      <>
+                        <TableCell><Input className="h-8 text-sm" value={editForm.name} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} /></TableCell>
+                        <TableCell className="hidden sm:table-cell"><Input className="h-8 text-sm font-mono" value={editForm.phone} onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))} /></TableCell>
+                        <TableCell className="hidden sm:table-cell"><Input className="h-8 text-sm" value={editForm.email} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} /></TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className={cn("text-xs capitalize",
+                            contact.status === "called" && "bg-success/10 text-success",
+                            contact.status === "failed" && "bg-destructive/10 text-destructive",
+                            contact.status === "pending" && "bg-muted text-muted-foreground",
+                          )}>{contact.status}</Badge>
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">{contact.outcome}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                              if (!editForm.name.trim() || !editForm.phone.trim()) {
+                                toast({ title: "Missing fields", description: "Name and phone are required.", variant: "destructive" });
+                                return;
+                              }
+                              setContacts(prev => prev.map(c => c.id === contact.id ? { ...c, name: editForm.name.trim(), phone: editForm.phone.trim(), email: editForm.email.trim() || "—" } : c));
+                              setEditingContactId(null);
+                              toast({ title: "Contact updated", description: `${editForm.name.trim()} has been updated.` });
+                            }}>
+                              <CheckCircle className="h-3.5 w-3.5 text-success" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingContactId(null)}>
+                              <XCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </>
+                    ) : (
+                      <>
+                        <TableCell><span className="font-medium">{contact.name}</span></TableCell>
+                        <TableCell className="hidden sm:table-cell"><span className="font-mono text-xs">{contact.phone}</span></TableCell>
+                        <TableCell className="hidden sm:table-cell"><span className="text-xs text-muted-foreground">{contact.email}</span></TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className={cn("text-xs capitalize",
+                            contact.status === "called" && "bg-success/10 text-success",
+                            contact.status === "failed" && "bg-destructive/10 text-destructive",
+                            contact.status === "pending" && "bg-muted text-muted-foreground",
+                          )}>{contact.status}</Badge>
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">{contact.outcome}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                              setEditingContactId(contact.id);
+                              setEditForm({ name: contact.name, phone: contact.phone, email: contact.email === "—" ? "" : contact.email });
+                            }}>
+                              <Edit className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                              setContacts(prev => prev.filter(c => c.id !== contact.id));
+                              toast({ title: "Contact removed", description: `${contact.name} has been removed.` });
+                            }}>
+                              <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
 
