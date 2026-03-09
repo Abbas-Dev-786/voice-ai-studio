@@ -30,6 +30,7 @@ import SettingsBilling from "@/pages/SettingsBilling";
 import SettingsAPI from "@/pages/SettingsAPI";
 import SettingsNotifications from "@/pages/SettingsNotifications";
 import NotFound from "@/pages/NotFound";
+import LandingPage from "@/pages/LandingPage";
 
 const queryClient = new QueryClient();
 
