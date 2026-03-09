@@ -80,7 +80,7 @@ const agentColumns: Column<typeof campaignAgents[0]>[] = [
   { key: "successRate", label: "Success", hideOnMobile: true },
 ];
 
-const contacts = [
+const initialContacts = [
   { id: "1", name: "Sarah Johnson", phone: "+1 (555) 101-0101", email: "sarah@example.com", status: "called" as const, outcome: "Booked demo", lastCall: "5 min ago" },
   { id: "2", name: "Mike Chen", phone: "+1 (555) 202-0202", email: "mike@example.com", status: "called" as const, outcome: "Interested", lastCall: "12 min ago" },
   { id: "3", name: "Lisa Park", phone: "+1 (555) 303-0303", email: "lisa@example.com", status: "failed" as const, outcome: "No answer", lastCall: "15 min ago" },
