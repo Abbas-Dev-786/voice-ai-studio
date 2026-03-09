@@ -405,7 +405,7 @@ export default function CampaignDetail() {
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm"><UserPlus className="mr-1.5 h-3.5 w-3.5" /> Assign Existing</Button>
-              <Button size="sm" onClick={() => navigate("/agents/new")}><Plus className="mr-1.5 h-3.5 w-3.5" /> Create Agent</Button>
+              <Button size="sm" onClick={() => setCreateAgentOpen(true)}><Plus className="mr-1.5 h-3.5 w-3.5" /> Create Agent</Button>
             </div>
           </div>
           <DataTable
