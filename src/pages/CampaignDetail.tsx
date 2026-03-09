@@ -17,6 +17,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { BuyPhoneNumberDialog } from "@/components/dialogs/BuyPhoneNumberDialog";
 import { UploadDocumentDialog } from "@/components/dialogs/UploadDocumentDialog";
 import { ConnectIntegrationDialog } from "@/components/dialogs/ConnectIntegrationDialog";
+import { CreateAgentDialog } from "@/components/dialogs/CreateAgentDialog";
 import { DeleteConfirmDialog } from "@/components/dialogs/DeleteConfirmDialog";
 import { ExportDataDialog } from "@/components/dialogs/ExportDataDialog";
 import {
@@ -196,6 +197,7 @@ export default function CampaignDetail() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [buyNumberOpen, setBuyNumberOpen] = useState(false);
   const [uploadDocOpen, setUploadDocOpen] = useState(false);
+  const [createAgentOpen, setCreateAgentOpen] = useState(false);
   const [connectIntOpen, setConnectIntOpen] = useState(false);
   const [connectTarget, setConnectTarget] = useState<any>(null);
   const [exportOpen, setExportOpen] = useState(false);
@@ -403,7 +405,7 @@ export default function CampaignDetail() {
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm"><UserPlus className="mr-1.5 h-3.5 w-3.5" /> Assign Existing</Button>
-              <Button size="sm" onClick={() => navigate("/agents/new")}><Plus className="mr-1.5 h-3.5 w-3.5" /> Create Agent</Button>
+              <Button size="sm" onClick={() => setCreateAgentOpen(true)}><Plus className="mr-1.5 h-3.5 w-3.5" /> Create Agent</Button>
             </div>
           </div>
           <DataTable
@@ -876,6 +878,7 @@ export default function CampaignDetail() {
       {/* ── Dialogs ─────────────────────────── */}
       <BuyPhoneNumberDialog open={buyNumberOpen} onOpenChange={(open) => { setBuyNumberOpen(open); if (!open && buyNumberOpen) toast({ title: "Phone number purchased", description: "The number has been added to this campaign." }); }} />
       <UploadDocumentDialog open={uploadDocOpen} onOpenChange={(open) => { setUploadDocOpen(open); if (!open && uploadDocOpen) toast({ title: "Document uploaded", description: "Knowledge base has been updated." }); }} />
+      <CreateAgentDialog open={createAgentOpen} onOpenChange={setCreateAgentOpen} onCreated={(agent) => toast({ title: "Agent created", description: `${agent.name} has been added to this campaign.` })} />
       <ConnectIntegrationDialog open={connectIntOpen} onOpenChange={(open) => { setConnectIntOpen(open); if (!open && connectIntOpen) toast({ title: "Integration updated", description: `${connectTarget?.name || "Integration"} configuration saved.` }); }} integration={connectTarget} />
       <ExportDataDialog open={exportOpen} onOpenChange={setExportOpen} title="Export Campaign Data" description="Download campaign data in your preferred format." />
       <DeleteConfirmDialog
