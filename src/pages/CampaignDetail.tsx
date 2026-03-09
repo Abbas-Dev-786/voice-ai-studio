@@ -197,6 +197,7 @@ export default function CampaignDetail() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [buyNumberOpen, setBuyNumberOpen] = useState(false);
   const [uploadDocOpen, setUploadDocOpen] = useState(false);
+  const [createAgentOpen, setCreateAgentOpen] = useState(false);
   const [connectIntOpen, setConnectIntOpen] = useState(false);
   const [connectTarget, setConnectTarget] = useState<any>(null);
   const [exportOpen, setExportOpen] = useState(false);
