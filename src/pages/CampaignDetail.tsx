@@ -199,6 +199,7 @@ export default function CampaignDetail() {
   const [buyNumberOpen, setBuyNumberOpen] = useState(false);
   const [uploadDocOpen, setUploadDocOpen] = useState(false);
   const [createAgentOpen, setCreateAgentOpen] = useState(false);
+  const [uploadContactsOpen, setUploadContactsOpen] = useState(false);
   const [connectIntOpen, setConnectIntOpen] = useState(false);
   const [connectTarget, setConnectTarget] = useState<any>(null);
   const [exportOpen, setExportOpen] = useState(false);
