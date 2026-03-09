@@ -470,7 +470,7 @@ export default function CampaignDetail() {
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm"><Download className="mr-1.5 h-3.5 w-3.5" /> Export</Button>
-              <Button size="sm"><Upload className="mr-1.5 h-3.5 w-3.5" /> Upload CSV</Button>
+              <Button size="sm" onClick={() => setUploadContactsOpen(true)}><Upload className="mr-1.5 h-3.5 w-3.5" /> Upload CSV</Button>
             </div>
           </div>
 
