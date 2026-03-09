@@ -89,20 +89,7 @@ const initialContacts = [
   { id: "6", name: "Tom Brown", phone: "+1 (555) 606-0606", email: "tom@example.com", status: "called" as const, outcome: "Booked demo", lastCall: "30 min ago" },
 ];
 
-const contactColumns: Column<typeof contacts[0]>[] = [
-  { key: "name", label: "Name", sortable: true, render: (r) => <span className="font-medium">{r.name}</span> },
-  { key: "phone", label: "Phone", hideOnMobile: true, render: (r) => <span className="font-mono text-xs">{r.phone}</span> },
-  { key: "email", label: "Email", hideOnMobile: true, render: (r) => <span className="text-xs text-muted-foreground">{r.email}</span> },
-  { key: "status", label: "Status", render: (r) => (
-    <Badge variant="secondary" className={cn("text-xs capitalize",
-      r.status === "called" && "bg-success/10 text-success",
-      r.status === "failed" && "bg-destructive/10 text-destructive",
-      r.status === "pending" && "bg-muted text-muted-foreground",
-    )}>{r.status}</Badge>
-  )},
-  { key: "outcome", label: "Outcome", hideOnMobile: true },
-  { key: "lastCall", label: "Last Call", hideOnMobile: true },
-];
+type ContactType = typeof initialContacts[number];
 
 const phoneNumbers = [
   { id: "1", number: "+1 (555) 100-2000", label: "Primary Outbound", type: "Local", callsMade: 642, status: "live" as const },
