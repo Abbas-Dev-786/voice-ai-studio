@@ -26,7 +26,7 @@ export default function SettingsAPI() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">API Keys</h1>
-          <p className="text-sm text-muted-foreground">Manage API access</p>
+          <p className="text-sm text-muted-foreground">Manage your ElevenLabs API keys and webhook configurations</p>
         </div>
         <Button onClick={() => setGenerateOpen(true)}><Plus className="mr-2 h-4 w-4" /> Generate Key</Button>
       </div>
