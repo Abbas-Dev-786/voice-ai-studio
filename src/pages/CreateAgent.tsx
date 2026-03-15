@@ -5,59 +5,55 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
-import { Check, ChevronLeft, ChevronRight, Play, Calendar, Search, Users, PhoneForwarded, Phone } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Bot } from "lucide-react";
+import { VoiceSettings, defaultVoiceConfig, VoiceConfig } from "@/components/VoiceSettings";
+import { ConversationFlowSettings, defaultConversationFlowConfig, ConversationFlowConfig } from "@/components/ConversationFlowSettings";
+import { ToolsConfig, defaultToolConfig, ToolConfig } from "@/components/ToolsConfig";
 
-const steps = ["Persona", "Prompt", "Tools", "Phone Number", "Review"];
+const steps = ["LLM & Prompt", "Voice", "Conversation", "Tools", "Review"];
 
-const voices = [
-  { id: "aria", name: "Aria", lang: "English (US)", gender: "Female" },
-  { id: "marcus", name: "Marcus", lang: "English (US)", gender: "Male" },
-  { id: "sophie", name: "Sophie", lang: "English (UK)", gender: "Female" },
-  { id: "raj", name: "Raj", lang: "English (IN)", gender: "Male" },
-  { id: "lucia", name: "Lucia", lang: "Spanish", gender: "Female" },
-  { id: "hans", name: "Hans", lang: "German", gender: "Male" },
-];
-
-const tools = [
-  { id: "calendar", name: "Calendar Booking", description: "Schedule appointments during calls", icon: Calendar },
-  { id: "crm", name: "CRM Lookup", description: "Access customer data in real-time", icon: Search },
-  { id: "faq", name: "FAQ Search", description: "Search knowledge base for answers", icon: Users },
-  { id: "transfer", name: "Transfer to Human", description: "Escalate call to a live agent", icon: PhoneForwarded },
-];
-
-const phoneNumbers = [
-  { id: "1", number: "+1 (555) 100-2000", label: "Main Line" },
-  { id: "2", number: "+1 (555) 200-3000", label: "Sales Line" },
-  { id: "3", number: "+1 (555) 300-4000", label: "Support Line" },
+const llmModels = [
+  { id: "gpt-4o", name: "GPT-4o", provider: "OpenAI", description: "Best overall quality" },
+  { id: "gpt-4o-mini", name: "GPT-4o Mini", provider: "OpenAI", description: "Fast & affordable" },
+  { id: "claude-3.5-sonnet", name: "Claude 3.5 Sonnet", provider: "Anthropic", description: "Strong reasoning" },
+  { id: "claude-3-haiku", name: "Claude 3 Haiku", provider: "Anthropic", description: "Ultra fast" },
+  { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro", provider: "Google", description: "Large context window" },
+  { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash", provider: "Google", description: "Speed optimized" },
+  { id: "custom", name: "Custom LLM", provider: "Custom", description: "Bring your own endpoint" },
 ];
 
 export default function CreateAgent() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
-  const [agentName, setAgentName] = useState("");
-  const [selectedVoice, setSelectedVoice] = useState("aria");
-  const [language, setLanguage] = useState("en-us");
-  const [personality, setPersonality] = useState([50]);
-  const [systemPrompt, setSystemPrompt] = useState("");
-  const [enabledTools, setEnabledTools] = useState<string[]>([]);
-  const [selectedNumber, setSelectedNumber] = useState("");
 
-  const toggleTool = (id: string) => {
-    setEnabledTools((prev) => prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]);
-  };
+  // Step 0: LLM & Prompt
+  const [agentName, setAgentName] = useState("");
+  const [selectedModel, setSelectedModel] = useState("gpt-4o");
+  const [customLlmUrl, setCustomLlmUrl] = useState("");
+  const [systemPrompt, setSystemPrompt] = useState("");
+  const [temperature, setTemperature] = useState("0.7");
+  const [maxTokens, setMaxTokens] = useState("1024");
+
+  // Step 1: Voice
+  const [voiceConfig, setVoiceConfig] = useState<VoiceConfig>(defaultVoiceConfig);
+
+  // Step 2: Conversation
+  const [flowConfig, setFlowConfig] = useState<ConversationFlowConfig>(defaultConversationFlowConfig);
+
+  // Step 3: Tools
+  const [toolConfig, setToolConfig] = useState<ToolConfig>(defaultToolConfig);
 
   const insertVariable = (v: string) => {
-    setSystemPrompt((prev) => prev + ` {${v}}`);
+    setSystemPrompt((prev) => prev + ` {{${v}}}`);
   };
 
   const canNext = () => {
-    if (currentStep === 0) return agentName.trim().length > 0;
-    if (currentStep === 1) return systemPrompt.trim().length > 0;
+    if (currentStep === 0) return agentName.trim().length > 0 && systemPrompt.trim().length > 0;
     return true;
   };
+
+  const selectedModelInfo = llmModels.find((m) => m.id === selectedModel);
 
   return (
     <div className="space-y-6">
@@ -67,7 +63,7 @@ export default function CreateAgent() {
         </Button>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Create Agent</h1>
-          <p className="text-sm text-muted-foreground">Set up a new voice AI agent</p>
+          <p className="text-sm text-muted-foreground">Configure a new ElevenLabs conversational AI agent</p>
         </div>
       </div>
 
@@ -96,137 +92,77 @@ export default function CreateAgent() {
       <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
         {currentStep === 0 && (
           <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="name">Agent Name</Label>
-              <Input id="name" placeholder="e.g. Sales Assistant" value={agentName} onChange={(e) => setAgentName(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Voice</Label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {voices.map((v) => (
-                  <button
-                    key={v.id}
-                    onClick={() => setSelectedVoice(v.id)}
-                    className={cn(
-                      "flex items-center gap-3 rounded-xl border p-3 text-left transition-all",
-                      selectedVoice === v.id ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:border-primary/40"
-                    )}
-                  >
-                    <div className="rounded-full bg-muted p-2">
-                      <Play className="h-3 w-3 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{v.name}</p>
-                      <p className="text-xs text-muted-foreground">{v.lang}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Language</Label>
-                <Select value={language} onValueChange={setLanguage}>
+                <Label htmlFor="name">Agent Name</Label>
+                <Input id="name" placeholder="e.g. Sales Assistant" value={agentName} onChange={(e) => setAgentName(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>LLM Model</Label>
+                <Select value={selectedModel} onValueChange={setSelectedModel}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="en-us">English (US)</SelectItem>
-                    <SelectItem value="en-gb">English (UK)</SelectItem>
-                    <SelectItem value="es">Spanish</SelectItem>
-                    <SelectItem value="de">German</SelectItem>
-                    <SelectItem value="fr">French</SelectItem>
+                    {llmModels.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        <span className="font-medium">{m.name}</span>
+                        <span className="text-muted-foreground ml-1.5 text-xs">— {m.description}</span>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            {selectedModel === "custom" && (
               <div className="space-y-2">
-                <Label>Personality: {personality[0] < 30 ? "Formal" : personality[0] > 70 ? "Casual" : "Balanced"}</Label>
-                <Slider value={personality} onValueChange={setPersonality} max={100} step={1} className="mt-3" />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Formal</span><span>Casual</span>
-                </div>
+                <Label>Custom LLM Endpoint URL</Label>
+                <Input placeholder="https://api.your-llm.com/v1/chat" value={customLlmUrl} onChange={(e) => setCustomLlmUrl(e.target.value)} />
+                <p className="text-xs text-muted-foreground">Must be compatible with the OpenAI Chat Completions API format.</p>
+              </div>
+            )}
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Temperature</Label>
+                <Input type="number" step="0.1" min="0" max="2" value={temperature} onChange={(e) => setTemperature(e.target.value)} />
+                <p className="text-xs text-muted-foreground">Higher = more creative, lower = more deterministic</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Max Tokens</Label>
+                <Input type="number" value={maxTokens} onChange={(e) => setMaxTokens(e.target.value)} />
               </div>
             </div>
-          </div>
-        )}
 
-        {currentStep === 1 && (
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <Label>System Prompt</Label>
-              <Select onValueChange={insertVariable}>
-                <SelectTrigger className="w-auto h-8 text-xs">
-                  <SelectValue placeholder="Insert Variable" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="customer_name">customer_name</SelectItem>
-                  <SelectItem value="company">company</SelectItem>
-                  <SelectItem value="product">product</SelectItem>
-                  <SelectItem value="date">date</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Textarea
-              placeholder="You are a helpful sales assistant for {company}. Your goal is to..."
-              value={systemPrompt}
-              onChange={(e) => setSystemPrompt(e.target.value)}
-              className="min-h-[200px] font-mono text-sm"
-            />
-            <p className="text-xs text-muted-foreground">{systemPrompt.length} characters</p>
-          </div>
-        )}
-
-        {currentStep === 2 && (
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">Enable tools your agent can use during calls</p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {tools.map((tool) => (
-                <div
-                  key={tool.id}
-                  className={cn(
-                    "flex items-start gap-3 rounded-xl border p-4 transition-all",
-                    enabledTools.includes(tool.id) && "border-primary bg-primary/5"
-                  )}
-                >
-                  <div className="rounded-lg bg-muted p-2">
-                    <tool.icon className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{tool.name}</p>
-                    <p className="text-xs text-muted-foreground">{tool.description}</p>
-                  </div>
-                  <Switch checked={enabledTools.includes(tool.id)} onCheckedChange={() => toggleTool(tool.id)} />
-                </div>
-              ))}
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Label>System Prompt</Label>
+                <Select onValueChange={insertVariable}>
+                  <SelectTrigger className="w-auto h-8 text-xs">
+                    <SelectValue placeholder="Insert Variable" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="customer_name">customer_name</SelectItem>
+                    <SelectItem value="company">company</SelectItem>
+                    <SelectItem value="product">product</SelectItem>
+                    <SelectItem value="date">date</SelectItem>
+                    <SelectItem value="call_id">call_id</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Textarea
+                placeholder="You are a helpful sales assistant for {{company}}. Your goal is to..."
+                value={systemPrompt}
+                onChange={(e) => setSystemPrompt(e.target.value)}
+                className="min-h-[200px] font-mono text-sm"
+              />
+              <p className="text-xs text-muted-foreground">{systemPrompt.length} characters</p>
             </div>
           </div>
         )}
 
-        {currentStep === 3 && (
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">Assign a phone number to this agent</p>
-            <div className="space-y-3">
-              {phoneNumbers.map((pn) => (
-                <button
-                  key={pn.id}
-                  onClick={() => setSelectedNumber(pn.id)}
-                  className={cn(
-                    "flex w-full items-center gap-3 rounded-xl border p-4 text-left transition-all",
-                    selectedNumber === pn.id ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:border-primary/40"
-                  )}
-                >
-                  <div className="rounded-lg bg-muted p-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="font-mono text-sm font-medium">{pn.number}</p>
-                    <p className="text-xs text-muted-foreground">{pn.label}</p>
-                  </div>
-                  {selectedNumber === pn.id && <Check className="ml-auto h-4 w-4 text-primary" />}
-                </button>
-              ))}
-            </div>
-            <Button variant="outline" className="w-full">Buy a New Number</Button>
-          </div>
-        )}
+        {currentStep === 1 && <VoiceSettings config={voiceConfig} onChange={setVoiceConfig} />}
+        {currentStep === 2 && <ConversationFlowSettings config={flowConfig} onChange={setFlowConfig} />}
+        {currentStep === 3 && <ToolsConfig config={toolConfig} onChange={setToolConfig} />}
 
         {currentStep === 4 && (
           <div className="space-y-4">
@@ -237,16 +173,27 @@ export default function CreateAgent() {
                 <p className="font-medium">{agentName || "—"}</p>
               </div>
               <div className="rounded-lg bg-muted p-4">
+                <p className="text-xs text-muted-foreground">LLM Model</p>
+                <p className="font-medium">{selectedModelInfo?.name || "—"}</p>
+                <p className="text-xs text-muted-foreground">{selectedModelInfo?.provider}</p>
+              </div>
+              <div className="rounded-lg bg-muted p-4">
                 <p className="text-xs text-muted-foreground">Voice</p>
-                <p className="font-medium">{voices.find((v) => v.id === selectedVoice)?.name || "—"}</p>
+                <p className="font-medium">Voice ID: {voiceConfig.voiceId.slice(0, 12)}...</p>
+              </div>
+              <div className="rounded-lg bg-muted p-4">
+                <p className="text-xs text-muted-foreground">Language</p>
+                <p className="font-medium">{flowConfig.language.toUpperCase()}</p>
+              </div>
+              <div className="rounded-lg bg-muted p-4">
+                <p className="text-xs text-muted-foreground">First Message</p>
+                <p className="font-medium text-sm">{flowConfig.firstMessage || "None set"}</p>
               </div>
               <div className="rounded-lg bg-muted p-4">
                 <p className="text-xs text-muted-foreground">Tools</p>
-                <p className="font-medium">{enabledTools.length > 0 ? enabledTools.map((t) => tools.find((x) => x.id === t)?.name).join(", ") : "None"}</p>
-              </div>
-              <div className="rounded-lg bg-muted p-4">
-                <p className="text-xs text-muted-foreground">Phone Number</p>
-                <p className="font-mono font-medium">{phoneNumbers.find((p) => p.id === selectedNumber)?.number || "None"}</p>
+                <p className="font-medium">
+                  {toolConfig.systemTools.length + toolConfig.clientTools.length + toolConfig.serverTools.length} configured
+                </p>
               </div>
             </div>
             <div className="rounded-lg bg-muted p-4">
@@ -259,7 +206,7 @@ export default function CreateAgent() {
 
       {/* Nav */}
       <div className="flex justify-between">
-        <Button variant="outline" onClick={() => currentStep > 0 ? setCurrentStep(currentStep - 1) : navigate("/agents")} >
+        <Button variant="outline" onClick={() => currentStep > 0 ? setCurrentStep(currentStep - 1) : navigate("/agents")}>
           <ChevronLeft className="mr-1 h-4 w-4" /> {currentStep === 0 ? "Cancel" : "Back"}
         </Button>
         <div className="flex gap-2">
@@ -270,7 +217,11 @@ export default function CreateAgent() {
             onClick={() => currentStep < 4 ? setCurrentStep(currentStep + 1) : navigate("/agents")}
             disabled={!canNext()}
           >
-            {currentStep === 4 ? "Publish Agent" : "Next"} {currentStep < 4 && <ChevronRight className="ml-1 h-4 w-4" />}
+            {currentStep === 4 ? (
+              <><Bot className="mr-1.5 h-4 w-4" /> Publish Agent</>
+            ) : (
+              <>Next <ChevronRight className="ml-1 h-4 w-4" /></>
+            )}
           </Button>
         </div>
       </div>
