@@ -2,36 +2,57 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/StatusBadge";
-import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, Download, Flag, Play, Pause, SkipForward } from "lucide-react";
+import { ChevronLeft, Download, Flag, Play, Pause } from "lucide-react";
 import { useState } from "react";
 
 const metadata = {
   contact: "+1 (555) 123-4567",
   agent: "Sales Bot",
+  agentId: "agent_abc123",
   direction: "Outbound",
   date: "Mar 7, 2026, 2:34 PM",
   duration: "3:42",
   status: "live" as const,
+  conversationId: "conv_1a2b3c4d",
+  model: "GPT-4o",
+  voice: "Sarah",
+  language: "English",
 };
 
 const costBreakdown = [
-  { label: "Telephony", value: "$0.04" },
-  { label: "AI Processing", value: "$0.08" },
+  { label: "LLM (GPT-4o)", value: "$0.06" },
+  { label: "TTS (Voice)", value: "$0.03" },
+  { label: "Telephony", value: "$0.03" },
   { label: "Total", value: "$0.12", bold: true },
 ];
 
+const evaluations = [
+  { criteria: "Qualified the lead", passed: true },
+  { criteria: "Booked a demo", passed: true },
+  { criteria: "Mentioned pricing", passed: false },
+  { criteria: "Stayed on script", passed: true },
+  { criteria: "Handled objections", passed: true },
+];
+
 const transcript = [
-  { speaker: "agent", text: "Hello! This is Alex from Acme Corp. Am I speaking with John?", time: "0:00" },
-  { speaker: "customer", text: "Yes, this is John. What's this about?", time: "0:04" },
-  { speaker: "agent", text: "Great! I'm reaching out because you expressed interest in our enterprise solution. I wanted to see if you had a few minutes to discuss how we can help streamline your operations.", time: "0:07" },
-  { speaker: "customer", text: "Sure, I've got about 5 minutes. What can you tell me?", time: "0:18" },
-  { speaker: "agent", text: "Our platform handles automated customer calls, qualification, and scheduling. Most of our clients see a 40% reduction in manual outreach time. Would you like me to schedule a demo with our solutions team?", time: "0:22" },
-  { speaker: "customer", text: "That sounds promising. Can we do Thursday afternoon?", time: "0:35" },
-  { speaker: "agent", text: "Thursday at 2 PM works perfectly. I've booked that for you. You'll receive a confirmation email shortly. Is there anything else I can help with?", time: "0:38" },
-  { speaker: "customer", text: "No, that's all. Thanks!", time: "0:48" },
-  { speaker: "agent", text: "Thank you, John! Have a great day.", time: "0:50" },
+  { speaker: "agent", text: "Hello! This is Alex from Acme Corp. Am I speaking with John?", time: "0:00", latency: "—" },
+  { speaker: "user", text: "Yes, this is John. What's this about?", time: "0:04", latency: "—" },
+  { speaker: "agent", text: "Great! I'm reaching out because you expressed interest in our enterprise solution. I wanted to see if you had a few minutes to discuss how we can help streamline your operations.", time: "0:07", latency: "180ms" },
+  { speaker: "user", text: "Sure, I've got about 5 minutes. What can you tell me?", time: "0:18", latency: "—" },
+  { speaker: "agent", text: "Our platform handles automated customer calls, qualification, and scheduling. Most of our clients see a 40% reduction in manual outreach time. Would you like me to schedule a demo with our solutions team?", time: "0:22", latency: "165ms" },
+  { speaker: "user", text: "That sounds promising. Can we do Thursday afternoon?", time: "0:35", latency: "—" },
+  { speaker: "tool", text: "[calendar.check_availability] → Available: Thursday 2:00 PM ✓", time: "0:36", latency: "320ms" },
+  { speaker: "agent", text: "Thursday at 2 PM works perfectly. I've booked that for you. You'll receive a confirmation email shortly. Is there anything else I can help with?", time: "0:38", latency: "155ms" },
+  { speaker: "user", text: "No, that's all. Thanks!", time: "0:48", latency: "—" },
+  { speaker: "agent", text: "Thank you, John! Have a great day.", time: "0:50", latency: "140ms" },
+];
+
+const collectedData = [
+  { field: "Name", value: "John" },
+  { field: "Interest Level", value: "High" },
+  { field: "Meeting Booked", value: "Thursday 2:00 PM" },
+  { field: "Objections", value: "None" },
 ];
 
 export default function CallDetail() {
@@ -47,8 +68,8 @@ export default function CallDetail() {
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Call Detail</h1>
-          <p className="text-sm text-muted-foreground">Call #{id}</p>
+          <h1 className="text-2xl font-bold tracking-tight">Conversation Detail</h1>
+          <p className="text-sm text-muted-foreground font-mono">{metadata.conversationId}</p>
         </div>
       </div>
 
@@ -56,14 +77,26 @@ export default function CallDetail() {
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-4">
           <div className="rounded-xl border bg-card p-4 shadow-sm space-y-3">
-            <h3 className="font-semibold text-sm">Call Info</h3>
+            <h3 className="font-semibold text-sm">Conversation Info</h3>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Contact</span><span className="font-mono">{metadata.contact}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Agent</span><span>{metadata.agent}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Direction</span><span>{metadata.direction}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Date</span><span>{metadata.date}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Duration</span><span className="font-mono">{metadata.duration}</span></div>
-              <div className="flex justify-between items-center"><span className="text-muted-foreground">Status</span><StatusBadge status={metadata.status} /></div>
+              {[
+                { label: "Contact", value: metadata.contact, mono: true },
+                { label: "Agent", value: metadata.agent },
+                { label: "Model", value: metadata.model },
+                { label: "Voice", value: metadata.voice },
+                { label: "Direction", value: metadata.direction },
+                { label: "Date", value: metadata.date },
+                { label: "Duration", value: metadata.duration, mono: true },
+              ].map((item) => (
+                <div key={item.label} className="flex justify-between">
+                  <span className="text-muted-foreground">{item.label}</span>
+                  <span className={item.mono ? "font-mono" : ""}>{item.value}</span>
+                </div>
+              ))}
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Status</span>
+                <StatusBadge status={metadata.status} />
+              </div>
             </div>
           </div>
 
@@ -78,24 +111,25 @@ export default function CallDetail() {
           </div>
 
           <div className="rounded-xl border bg-card p-4 shadow-sm space-y-3">
-            <h3 className="font-semibold text-sm">Sentiment</h3>
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs text-muted-foreground"><span>Negative</span><span>Positive</span></div>
-              <div className="relative h-2 rounded-full bg-muted">
-                <div className="absolute left-[72%] top-1/2 -translate-x-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2 border-success bg-card" />
-                <div className="h-full rounded-full bg-gradient-to-r from-destructive via-warning to-success" style={{ opacity: 0.3 }} />
+            <h3 className="font-semibold text-sm">Evaluation Criteria</h3>
+            {evaluations.map((e) => (
+              <div key={e.criteria} className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{e.criteria}</span>
+                <Badge variant={e.passed ? "default" : "secondary"} className={cn("text-xs", e.passed ? "bg-success text-success-foreground" : "")}>
+                  {e.passed ? "Pass" : "Fail"}
+                </Badge>
               </div>
-              <p className="text-xs text-center text-success font-medium">Positive (72%)</p>
-            </div>
+            ))}
           </div>
 
           <div className="rounded-xl border bg-card p-4 shadow-sm space-y-3">
-            <h3 className="font-semibold text-sm">Tags</h3>
-            <div className="flex flex-wrap gap-1.5">
-              <Badge variant="secondary">demo-booked</Badge>
-              <Badge variant="secondary">enterprise</Badge>
-              <Badge variant="secondary">qualified</Badge>
-            </div>
+            <h3 className="font-semibold text-sm">Collected Data</h3>
+            {collectedData.map((d) => (
+              <div key={d.field} className="flex justify-between text-sm">
+                <span className="text-muted-foreground">{d.field}</span>
+                <span className="font-medium">{d.value}</span>
+              </div>
+            ))}
           </div>
 
           <div className="flex flex-col gap-2">
@@ -105,7 +139,7 @@ export default function CallDetail() {
           </div>
         </div>
 
-        {/* Right Column */}
+        {/* Right Column — Transcript */}
         <div className="lg:col-span-3 space-y-4">
           {/* Audio Player */}
           <div className="rounded-xl border bg-card p-4 shadow-sm space-y-3">
@@ -132,19 +166,37 @@ export default function CallDetail() {
             </div>
           </div>
 
-          {/* Transcript */}
+          {/* Turn-by-turn Transcript */}
           <div className="rounded-xl border bg-card p-4 shadow-sm space-y-3">
-            <h3 className="font-semibold text-sm">Transcript</h3>
+            <h3 className="font-semibold text-sm">Turn-by-Turn Transcript</h3>
             <div className="space-y-3">
               {transcript.map((line, i) => (
-                <div key={i} className={cn("flex", line.speaker === "agent" ? "justify-start" : "justify-end")}>
-                  <div className={cn(
-                    "max-w-[85%] rounded-xl px-4 py-2.5",
-                    line.speaker === "agent" ? "bg-primary/10" : "bg-muted"
-                  )}>
-                    <p className="text-sm">{line.text}</p>
-                    <button className="text-[10px] text-primary hover:underline mt-1">{line.time}</button>
-                  </div>
+                <div key={i} className={cn(
+                  "flex",
+                  line.speaker === "agent" ? "justify-start" : line.speaker === "tool" ? "justify-center" : "justify-end"
+                )}>
+                  {line.speaker === "tool" ? (
+                    <div className="rounded-lg bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
+                      {line.text}
+                      <span className="ml-2 text-primary">{line.latency}</span>
+                    </div>
+                  ) : (
+                    <div className={cn(
+                      "max-w-[85%] rounded-xl px-4 py-2.5",
+                      line.speaker === "agent" ? "bg-primary/10" : "bg-muted"
+                    )}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-semibold uppercase text-muted-foreground">
+                          {line.speaker === "agent" ? "Agent" : "User"}
+                        </span>
+                        {line.latency !== "—" && (
+                          <span className="text-[10px] font-mono text-primary">{line.latency}</span>
+                        )}
+                      </div>
+                      <p className="text-sm">{line.text}</p>
+                      <button className="text-[10px] text-primary hover:underline mt-1">{line.time}</button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

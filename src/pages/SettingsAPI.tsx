@@ -26,7 +26,7 @@ export default function SettingsAPI() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">API Keys</h1>
-          <p className="text-sm text-muted-foreground">Manage API access</p>
+          <p className="text-sm text-muted-foreground">Manage your ElevenLabs API keys and webhook configurations</p>
         </div>
         <Button onClick={() => setGenerateOpen(true)}><Plus className="mr-2 h-4 w-4" /> Generate Key</Button>
       </div>
@@ -62,10 +62,11 @@ export default function SettingsAPI() {
         <EmptyState icon={Key} title="No API keys" description="Generate an API key to integrate with your systems." actionLabel="Generate Key" onAction={() => setGenerateOpen(true)} />
       )}
 
-      <div className="rounded-xl border bg-card p-4 shadow-sm">
+      <div className="rounded-xl border bg-card p-4 shadow-sm space-y-2">
+        <p className="text-sm font-medium">ElevenLabs API Integration</p>
         <p className="text-sm text-muted-foreground">
-          Need help? Check our{" "}
-          <a href="#" className="text-primary hover:underline">API Documentation</a>
+          This platform wraps the ElevenLabs Conversational AI API. Your API key is used to manage agents, conversations, and telephony.{" "}
+          <a href="https://elevenlabs.io/docs/api-reference" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View ElevenLabs API Docs →</a>
         </p>
       </div>
 
