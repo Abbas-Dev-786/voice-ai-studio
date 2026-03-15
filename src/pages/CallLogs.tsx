@@ -36,8 +36,8 @@ export default function CallLogs() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Call Logs</h1>
-          <p className="text-sm text-muted-foreground">All call records across campaigns. View per-campaign logs within each campaign.</p>
+          <h1 className="text-2xl font-bold tracking-tight">Conversations</h1>
+          <p className="text-sm text-muted-foreground">All ElevenLabs conversation records. Click to view transcripts, costs, and evaluations.</p>
         </div>
         <Button variant="outline" onClick={() => setExportOpen(true)}>
           <Download className="mr-2 h-4 w-4" /> Export

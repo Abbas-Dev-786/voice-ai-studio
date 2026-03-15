@@ -21,7 +21,7 @@ const navGroups = [
     label: "Resources",
     items: [
       { title: "Agents", url: "/agents", icon: Bot },
-      { title: "Call Logs", url: "/calls", icon: PhoneCall },
+      { title: "Conversations", url: "/calls", icon: PhoneCall },
       { title: "Phone Numbers", url: "/phone-numbers", icon: Phone },
       { title: "Knowledge Base", url: "/knowledge", icon: BookOpen },
       { title: "Integrations", url: "/integrations", icon: Puzzle },
