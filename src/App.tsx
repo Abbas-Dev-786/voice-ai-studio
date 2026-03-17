@@ -55,7 +55,7 @@ const App = () => (
               <Route path="/agents" element={<AgentsList />} />
               <Route path="/agents/new" element={<CreateAgent />} />
               <Route path="/agents/:id" element={<AgentDetail />} />
-              <Route path="/agents/:id/playground" element={<AgentPlayground />} />
+              
               <Route path="/campaigns" element={<CampaignsList />} />
               <Route path="/campaigns/new" element={<CreateCampaign />} />
               <Route path="/campaigns/:id" element={<CampaignDetail />} />
