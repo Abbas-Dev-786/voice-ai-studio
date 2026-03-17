@@ -14,7 +14,7 @@ import Analytics from "@/pages/Analytics";
 import AgentsList from "@/pages/AgentsList";
 import CreateAgent from "@/pages/CreateAgent";
 import AgentDetail from "@/pages/AgentDetail";
-import AgentPlayground from "@/pages/AgentPlayground";
+
 import CampaignsList from "@/pages/CampaignsList";
 import CreateCampaign from "@/pages/CreateCampaign";
 import CampaignDetail from "@/pages/CampaignDetail";
@@ -55,7 +55,7 @@ const App = () => (
               <Route path="/agents" element={<AgentsList />} />
               <Route path="/agents/new" element={<CreateAgent />} />
               <Route path="/agents/:id" element={<AgentDetail />} />
-              <Route path="/agents/:id/playground" element={<AgentPlayground />} />
+              
               <Route path="/campaigns" element={<CampaignsList />} />
               <Route path="/campaigns/new" element={<CreateCampaign />} />
               <Route path="/campaigns/:id" element={<CampaignDetail />} />

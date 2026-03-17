@@ -18,7 +18,7 @@ interface VoiceSettingsProps {
   className?: string;
 }
 
-const elevenLabsVoices = [
+export const elevenLabsVoices = [
   { id: "EXAVITQu4vr4xnSDxMaL", name: "Sarah", lang: "English (US)", gender: "Female" },
   { id: "CwhRBWXzGAHq8TQ4Fs17", name: "Roger", lang: "English (US)", gender: "Male" },
   { id: "FGY2WhTYpPnrIDTdsKH5", name: "Laura", lang: "English (US)", gender: "Female" },
