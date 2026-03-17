@@ -14,7 +14,7 @@ import Analytics from "@/pages/Analytics";
 import AgentsList from "@/pages/AgentsList";
 import CreateAgent from "@/pages/CreateAgent";
 import AgentDetail from "@/pages/AgentDetail";
-import AgentPlayground from "@/pages/AgentPlayground";
+
 import CampaignsList from "@/pages/CampaignsList";
 import CreateCampaign from "@/pages/CreateCampaign";
 import CampaignDetail from "@/pages/CampaignDetail";
