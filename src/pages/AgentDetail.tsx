@@ -5,11 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/StatusBadge";
-import { DataTable, Column } from "@/components/DataTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
-import { ChevronLeft, Settings, History, Trash2, Mic, Wrench, BookOpen, Globe, BarChart3, Phone } from "lucide-react";
+import { ChevronLeft, Settings, Trash2, Mic, Wrench, BookOpen, Globe, Phone } from "lucide-react";
 import { DeleteConfirmDialog } from "@/components/dialogs/DeleteConfirmDialog";
 import { useToast } from "@/hooks/use-toast";
 import { VoiceSettings, defaultVoiceConfig } from "@/components/VoiceSettings";
@@ -19,20 +18,8 @@ import { WebWidgetConfig } from "@/components/WebWidgetConfig";
 import { VoicePlayground } from "@/components/VoicePlayground";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const agentCallHistory = [
-  { contact: "+1 (555) 111-2222", duration: "2:34", status: "live" as const, time: "10 min ago", cost: "$0.08" },
-  { contact: "+1 (555) 333-4444", duration: "5:12", status: "live" as const, time: "1 hr ago", cost: "$0.18" },
-  { contact: "+1 (555) 555-6666", duration: "0:22", status: "error" as const, time: "2 hrs ago", cost: "$0.02" },
-  { contact: "+1 (555) 777-8888", duration: "3:45", status: "live" as const, time: "3 hrs ago", cost: "$0.12" },
-];
 
-const callColumns: Column<typeof agentCallHistory[0]>[] = [
-  { key: "contact", label: "Contact", render: (r) => <span className="font-mono text-sm">{r.contact}</span> },
-  { key: "duration", label: "Duration", hideOnMobile: true, render: (r) => <span className="font-mono text-sm">{r.duration}</span> },
-  { key: "status", label: "Status", render: (r) => <StatusBadge status={r.status} /> },
-  { key: "cost", label: "Cost", hideOnMobile: true, render: (r) => <span className="font-mono text-sm">{r.cost}</span> },
-  { key: "time", label: "Time", hideOnMobile: true },
-];
+
 
 const llmModels = [
   { id: "gpt-4o", name: "GPT-4o" },
@@ -102,8 +89,6 @@ export default function AgentDetail() {
               <TabsTrigger value="tools" className="gap-1.5"><Wrench className="h-3.5 w-3.5" /> Tools</TabsTrigger>
               <TabsTrigger value="knowledge" className="gap-1.5"><BookOpen className="h-3.5 w-3.5" /> Knowledge</TabsTrigger>
               <TabsTrigger value="deploy" className="gap-1.5"><Globe className="h-3.5 w-3.5" /> Deploy</TabsTrigger>
-              <TabsTrigger value="history" className="gap-1.5"><History className="h-3.5 w-3.5" /> History</TabsTrigger>
-              <TabsTrigger value="analytics" className="gap-1.5"><BarChart3 className="h-3.5 w-3.5" /> Analytics</TabsTrigger>
             </TabsList>
 
             {/* Config Tab */}
@@ -203,27 +188,7 @@ export default function AgentDetail() {
               <WebWidgetConfig agentId={id} />
             </TabsContent>
 
-            {/* History Tab */}
-            <TabsContent value="history" className="mt-4">
-              <DataTable columns={callColumns} data={agentCallHistory} searchKey="contact" searchPlaceholder="Search conversations..." />
-            </TabsContent>
 
-            {/* Analytics Tab */}
-            <TabsContent value="analytics" className="mt-4">
-              <div className="grid gap-4 sm:grid-cols-4">
-                {[
-                  { label: "Total Conversations", value: "1,847" },
-                  { label: "Avg Duration", value: "2:34" },
-                  { label: "Success Rate", value: "94.2%" },
-                  { label: "Total Cost", value: "$142.50" },
-                ].map((stat) => (
-                  <div key={stat.label} className="rounded-xl border bg-card p-4 shadow-sm">
-                    <p className="text-xs text-muted-foreground">{stat.label}</p>
-                    <p className="text-2xl font-bold mt-1">{stat.value}</p>
-                  </div>
-                ))}
-              </div>
-            </TabsContent>
           </Tabs>
         </div>
 
