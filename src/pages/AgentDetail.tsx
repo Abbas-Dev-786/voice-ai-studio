@@ -19,20 +19,8 @@ import { WebWidgetConfig } from "@/components/WebWidgetConfig";
 import { VoicePlayground } from "@/components/VoicePlayground";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const agentCallHistory = [
-  { contact: "+1 (555) 111-2222", duration: "2:34", status: "live" as const, time: "10 min ago", cost: "$0.08" },
-  { contact: "+1 (555) 333-4444", duration: "5:12", status: "live" as const, time: "1 hr ago", cost: "$0.18" },
-  { contact: "+1 (555) 555-6666", duration: "0:22", status: "error" as const, time: "2 hrs ago", cost: "$0.02" },
-  { contact: "+1 (555) 777-8888", duration: "3:45", status: "live" as const, time: "3 hrs ago", cost: "$0.12" },
-];
 
-const callColumns: Column<typeof agentCallHistory[0]>[] = [
-  { key: "contact", label: "Contact", render: (r) => <span className="font-mono text-sm">{r.contact}</span> },
-  { key: "duration", label: "Duration", hideOnMobile: true, render: (r) => <span className="font-mono text-sm">{r.duration}</span> },
-  { key: "status", label: "Status", render: (r) => <StatusBadge status={r.status} /> },
-  { key: "cost", label: "Cost", hideOnMobile: true, render: (r) => <span className="font-mono text-sm">{r.cost}</span> },
-  { key: "time", label: "Time", hideOnMobile: true },
-];
+
 
 const llmModels = [
   { id: "gpt-4o", name: "GPT-4o" },
