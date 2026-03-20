@@ -201,27 +201,7 @@ export default function AgentDetail() {
               <WebWidgetConfig agentId={id} />
             </TabsContent>
 
-            {/* History Tab */}
-            <TabsContent value="history" className="mt-4">
-              <DataTable columns={callColumns} data={agentCallHistory} searchKey="contact" searchPlaceholder="Search conversations..." />
-            </TabsContent>
 
-            {/* Analytics Tab */}
-            <TabsContent value="analytics" className="mt-4">
-              <div className="grid gap-4 sm:grid-cols-4">
-                {[
-                  { label: "Total Conversations", value: "1,847" },
-                  { label: "Avg Duration", value: "2:34" },
-                  { label: "Success Rate", value: "94.2%" },
-                  { label: "Total Cost", value: "$142.50" },
-                ].map((stat) => (
-                  <div key={stat.label} className="rounded-xl border bg-card p-4 shadow-sm">
-                    <p className="text-xs text-muted-foreground">{stat.label}</p>
-                    <p className="text-2xl font-bold mt-1">{stat.value}</p>
-                  </div>
-                ))}
-              </div>
-            </TabsContent>
           </Tabs>
         </div>
 
