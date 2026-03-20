@@ -9,7 +9,7 @@ import { DataTable, Column } from "@/components/DataTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
-import { ChevronLeft, Settings, History, Trash2, Mic, Wrench, BookOpen, Globe, BarChart3, Phone } from "lucide-react";
+import { ChevronLeft, Settings, Trash2, Mic, Wrench, BookOpen, Globe, Phone } from "lucide-react";
 import { DeleteConfirmDialog } from "@/components/dialogs/DeleteConfirmDialog";
 import { useToast } from "@/hooks/use-toast";
 import { VoiceSettings, defaultVoiceConfig } from "@/components/VoiceSettings";
