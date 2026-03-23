@@ -57,7 +57,6 @@ const App = () => (
               <Route path="/agents/:id" element={<AgentDetail />} />
               
               <Route path="/campaigns" element={<CampaignsList />} />
-              <Route path="/campaigns/new" element={<CreateCampaign />} />
               <Route path="/campaigns/:id" element={<CampaignDetail />} />
               <Route path="/calls" element={<CallLogs />} />
               <Route path="/calls/:id" element={<CallDetail />} />
