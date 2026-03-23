@@ -62,7 +62,7 @@ export default function AgentDetail() {
               <h1 className="text-2xl font-bold tracking-tight">Sales Bot</h1>
               <StatusBadge status="live" />
             </div>
-            <p className="text-sm text-muted-foreground">Agent ID: {id}</p>
+            <p className="text-sm text-muted-foreground font-mono text-xs">agent_{id}</p>
           </div>
         </div>
         <div className="flex gap-2">

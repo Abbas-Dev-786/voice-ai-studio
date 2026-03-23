@@ -16,7 +16,7 @@ import CreateAgent from "@/pages/CreateAgent";
 import AgentDetail from "@/pages/AgentDetail";
 
 import CampaignsList from "@/pages/CampaignsList";
-import CreateCampaign from "@/pages/CreateCampaign";
+
 import CampaignDetail from "@/pages/CampaignDetail";
 import CallLogs from "@/pages/CallLogs";
 import CallDetail from "@/pages/CallDetail";

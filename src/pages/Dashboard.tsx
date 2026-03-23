@@ -253,7 +253,7 @@ export default function Dashboard() {
       {/* ── Aggregated KPIs ── */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <StatCard label="Total Calls" value="1,284" trend={{ value: "12%", positive: true }} icon={<PhoneCall className="h-4 w-4" />} />
-        <StatCard label="Success Rate" value="94.2%" trend={{ value: "2.1%", positive: true }} icon={<TrendingUp className="h-4 w-4" />} />
+        <StatCard label="Top Agent Success" value="94.2%" trend={{ value: "2.1%", positive: true }} icon={<TrendingUp className="h-4 w-4" />} />
         <StatCard label="Minutes Used" value="4,320" icon={<Clock className="h-4 w-4" />}>
           <Progress value={43} className="mt-3 h-1.5" />
           <p className="mt-1 text-xs text-muted-foreground">4,320 / 10,000 min</p>
