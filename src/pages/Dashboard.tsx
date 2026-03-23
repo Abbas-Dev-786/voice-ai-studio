@@ -8,10 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   PhoneCall, TrendingUp, Clock, DollarSign, Bot, Megaphone,
-  Rocket, Check, ChevronRight, Plus, Phone, CreditCard,
+  Rocket, Check, ChevronRight, Plus, Phone,
   ArrowRight, Zap, Trophy, BarChart3,
 } from "lucide-react";
-import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
