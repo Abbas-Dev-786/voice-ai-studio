@@ -8,12 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   PhoneCall, TrendingUp, Clock, DollarSign, Bot, Megaphone,
-  Rocket, Check, ChevronRight, Plus, Phone, CreditCard,
+  Rocket, Check, ChevronRight, Plus, Phone,
   ArrowRight, Zap, Trophy, BarChart3,
 } from "lucide-react";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 /* ─── Mock data ─── */
 
@@ -112,37 +109,50 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Welcome back, Alex</h1>
-          <p className="text-sm text-muted-foreground">
-            {hasCampaigns
-              ? `You have ${activeCampaigns.length} active campaign${activeCampaigns.length > 1 ? "s" : ""} running`
-              : "Let's get your first campaign up and running"}
-          </p>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> Quick Actions
+      {/* ── Welcome Banner ── */}
+      <div className="rounded-xl border bg-card p-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Welcome back, Alex</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {hasCampaigns
+                ? `You have ${activeCampaigns.length} active campaign${activeCampaigns.length > 1 ? "s" : ""} running`
+                : "Let's get your first campaign up and running"}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/campaigns")}>
+              View Campaigns
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={() => navigate("/campaigns")}>
-              <Bot className="mr-2 h-4 w-4" /> Create Agent
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/campaigns/create")}>
-              <Megaphone className="mr-2 h-4 w-4" /> Create Campaign
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/phone-numbers")}>
-              <Phone className="mr-2 h-4 w-4" /> Buy Number
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/settings/billing")}>
-              <CreditCard className="mr-2 h-4 w-4" /> Upgrade Plan
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            <Button onClick={() => navigate("/campaigns")}>
+              <Plus className="mr-2 h-4 w-4" /> Create Campaign
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Quick Actions Grid ── */}
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        {[
+          { icon: Megaphone, label: "New Campaign", desc: "Launch outbound calls", href: "/campaigns" },
+          { icon: Bot, label: "New Agent", desc: "Build a voice agent", href: "/agents/new" },
+          { icon: BarChart3, label: "View Analytics", desc: "See performance data", href: "/analytics" },
+          { icon: Phone, label: "Add Phone Number", desc: "Get a new number", href: "/phone-numbers" },
+        ].map((action) => (
+          <button
+            key={action.label}
+            onClick={() => navigate(action.href)}
+            className="flex items-center gap-3 rounded-xl border bg-card p-4 shadow-sm transition-all hover:shadow-md hover:border-primary/30 text-left"
+          >
+            <div className="rounded-lg bg-primary/10 p-2.5 shrink-0">
+              <action.icon className="h-4 w-4 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium truncate">{action.label}</p>
+              <p className="text-xs text-muted-foreground truncate">{action.desc}</p>
+            </div>
+          </button>
+        ))}
       </div>
 
       {/* ── Onboarding Stepper ── */}
@@ -240,7 +250,7 @@ export default function Dashboard() {
       {/* ── Aggregated KPIs ── */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <StatCard label="Total Calls" value="1,284" trend={{ value: "12%", positive: true }} icon={<PhoneCall className="h-4 w-4" />} />
-        <StatCard label="Success Rate" value="94.2%" trend={{ value: "2.1%", positive: true }} icon={<TrendingUp className="h-4 w-4" />} />
+        <StatCard label="Top Agent Success" value="94.2%" trend={{ value: "2.1%", positive: true }} icon={<TrendingUp className="h-4 w-4" />} />
         <StatCard label="Minutes Used" value="4,320" icon={<Clock className="h-4 w-4" />}>
           <Progress value={43} className="mt-3 h-1.5" />
           <p className="mt-1 text-xs text-muted-foreground">4,320 / 10,000 min</p>

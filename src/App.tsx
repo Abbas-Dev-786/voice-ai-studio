@@ -16,7 +16,7 @@ import CreateAgent from "@/pages/CreateAgent";
 import AgentDetail from "@/pages/AgentDetail";
 
 import CampaignsList from "@/pages/CampaignsList";
-import CreateCampaign from "@/pages/CreateCampaign";
+
 import CampaignDetail from "@/pages/CampaignDetail";
 import CallLogs from "@/pages/CallLogs";
 import CallDetail from "@/pages/CallDetail";
@@ -57,7 +57,6 @@ const App = () => (
               <Route path="/agents/:id" element={<AgentDetail />} />
               
               <Route path="/campaigns" element={<CampaignsList />} />
-              <Route path="/campaigns/new" element={<CreateCampaign />} />
               <Route path="/campaigns/:id" element={<CampaignDetail />} />
               <Route path="/calls" element={<CallLogs />} />
               <Route path="/calls/:id" element={<CallDetail />} />

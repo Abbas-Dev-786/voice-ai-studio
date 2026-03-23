@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-type Status = "live" | "paused" | "error" | "draft";
+type Status = "live" | "paused" | "error" | "draft" | "ready" | "completed";
 
 const statusConfig: Record<Status, { label: string; dotClass: string; bgClass: string; textClass: string }> = {
   live: {
@@ -26,6 +26,18 @@ const statusConfig: Record<Status, { label: string; dotClass: string; bgClass: s
     dotClass: "bg-muted-foreground",
     bgClass: "bg-muted",
     textClass: "text-muted-foreground",
+  },
+  ready: {
+    label: "Ready",
+    dotClass: "bg-[hsl(210_80%_55%)]",
+    bgClass: "bg-[hsl(210_80%_55%)]/10",
+    textClass: "text-[hsl(210_80%_55%)]",
+  },
+  completed: {
+    label: "Completed",
+    dotClass: "bg-success",
+    bgClass: "bg-success/10",
+    textClass: "text-success",
   },
 };
 
