@@ -212,6 +212,16 @@ export default function CampaignDetail() {
     { label: "Voicemail", count: 58, pct: 7, icon: Voicemail, color: "text-muted-foreground" },
   ];
 
+  // Mock campaign lookup by id
+  const campaignData: Record<string, { name: string; status: string }> = {
+    "1": { name: "Q1 Outreach", status: "live" },
+    "2": { name: "Product Launch", status: "paused" },
+    "3": { name: "Survey Q1", status: "draft" },
+    "4": { name: "Re-engagement", status: "completed" },
+  };
+  const campaign = campaignData[id || "1"] || { name: `Campaign ${id}`, status: "draft" };
+  const isDraft = campaign.status === "draft";
+
   return (
     <div className="space-y-5 pb-8">
       {/* ── Header ──────────────────────────── */}
@@ -222,13 +232,13 @@ export default function CampaignDetail() {
           </Button>
           <span className="text-muted-foreground hover:text-foreground cursor-pointer" onClick={() => navigate("/campaigns")}>Campaigns</span>
           <span className="text-muted-foreground">/</span>
-          <span className="font-medium">Q1 Outreach</span>
+          <span className="font-medium">{campaign.name}</span>
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">Q1 Outreach</h1>
-            <StatusBadge status={isPaused ? "paused" : "live"} />
+            <h1 className="text-2xl font-bold tracking-tight">{campaign.name}</h1>
+            <StatusBadge status={isPaused ? "paused" : (campaign.status as any)} />
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => setIsPaused(!isPaused)}>
@@ -240,6 +250,19 @@ export default function CampaignDetail() {
             </Button>
           </div>
         </div>
+
+        {/* Draft nudge bar */}
+        {isDraft && (
+          <div className="rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-2">
+            <span className="text-sm text-warning font-medium flex-1">
+              ⚠ Missing resources: Add contacts and a phone number to launch this campaign.
+            </span>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => setActiveTab("contacts")}>Add Contacts</Button>
+              <Button size="sm" variant="outline" onClick={() => setActiveTab("phones")}>Add Phone</Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Tab Navigation ──────────────────── */}
