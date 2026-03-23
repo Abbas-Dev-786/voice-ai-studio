@@ -18,11 +18,11 @@ const navGroups = [
     ],
   },
   {
-    label: "Resources",
+    label: "Setup",
     items: [
-      { title: "Agents", url: "/agents", icon: Bot },
+      { title: "Agents", url: "/agents", icon: Bot, badge: "3" },
       { title: "Conversations", url: "/calls", icon: PhoneCall },
-      { title: "Phone Numbers", url: "/phone-numbers", icon: Phone },
+      { title: "Phone Numbers", url: "/phone-numbers", icon: Phone, badge: "2" },
       { title: "Knowledge Base", url: "/knowledge", icon: BookOpen },
       { title: "Integrations", url: "/integrations", icon: Puzzle },
     ],
