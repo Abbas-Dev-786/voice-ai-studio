@@ -11,8 +11,6 @@ import {
   Rocket, Check, ChevronRight, Plus, Phone,
   ArrowRight, Zap, Trophy, BarChart3,
 } from "lucide-react";
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 /* ─── Mock data ─── */
 
