@@ -121,7 +121,7 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
               <div className="space-y-2">
                 <Label className="text-xs">System Prompt</Label>
                 <Textarea
-                  defaultValue={`You are a ${agentInfo?.name || "voice agent"}. Your goal is to ${agentInfo?.desc || "assist callers"}.`}
+                  defaultValue="You are a voice agent. Follow the campaign goal and assist callers professionally."
                   className="min-h-[80px] text-sm"
                 />
               </div>
