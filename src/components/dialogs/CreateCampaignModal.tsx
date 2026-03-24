@@ -8,25 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Slider } from "@/components/ui/slider";
-import { Bot, ChevronDown, Upload, Megaphone, Users, CalendarSearch, MessageSquare, Target } from "lucide-react";
+import { Bot, ChevronDown, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-
-const goals = [
-  { id: "book-demos", label: "Book Demos", icon: CalendarSearch },
-  { id: "qualify-leads", label: "Qualify Leads", icon: Target },
-  { id: "re-engage", label: "Re-engage", icon: Users },
-  { id: "run-survey", label: "Run Survey", icon: MessageSquare },
-  { id: "custom", label: "Custom", icon: Megaphone },
-];
-
-const goalAgentMap: Record<string, { name: string; desc: string }> = {
-  "book-demos": { name: "Sales Assistant", desc: "qualifies leads and books demo calls" },
-  "qualify-leads": { name: "Lead Qualifier", desc: "asks qualifying questions and scores leads" },
-  "re-engage": { name: "Re-engagement Agent", desc: "reconnects with inactive contacts" },
-  "run-survey": { name: "Survey Agent", desc: "conducts structured surveys and collects responses" },
-  "custom": { name: "Custom Agent", desc: "fully customizable agent — set your own prompt" },
-};
 
 const llmModels = [
   { id: "gpt-4o", name: "GPT-4o" },
@@ -44,15 +28,13 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
   const navigate = useNavigate();
   const { toast } = useToast();
   const [name, setName] = useState("");
-  const [goal, setGoal] = useState<string | null>(null);
+  const [goalDescription, setGoalDescription] = useState("");
   const [showCustomise, setShowCustomise] = useState(false);
   const [showOptional, setShowOptional] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const agentInfo = goal ? goalAgentMap[goal] : null;
-
   const handleLaunch = () => {
-    if (!name.trim() || !goal) return;
+    if (!name.trim() || !goalDescription.trim()) return;
 
     // No contacts = save as draft
     toast({
@@ -83,35 +65,28 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
             <p className="text-xs text-muted-foreground text-right">{name.length}/80</p>
           </div>
 
-          {/* Goal Pills */}
+          {/* Campaign Goal */}
           <div className="space-y-2">
-            <Label>Goal <span className="text-destructive">*</span></Label>
-            <div className="flex flex-wrap gap-2">
-              {goals.map((g) => (
-                <button
-                  key={g.id}
-                  onClick={() => { setGoal(g.id); setShowCustomise(false); }}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium border transition-all",
-                    goal === g.id
-                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                      : "bg-card text-foreground border-border hover:border-primary/40"
-                  )}
-                >
-                  <g.icon className="h-3.5 w-3.5" />
-                  {g.label}
-                </button>
-              ))}
+            <Label>Campaign Goal <span className="text-destructive">*</span></Label>
+            <Textarea
+              placeholder="e.g. Reach out to trial users who haven't booked a demo yet and schedule a 15-min product walkthrough"
+              value={goalDescription}
+              onChange={(e) => setGoalDescription(e.target.value.slice(0, 200))}
+              className="min-h-[80px] text-sm"
+            />
+            <div className="flex justify-between">
+              <p className="text-xs text-muted-foreground">Briefly describe what this campaign should achieve — this guides the agent's behavior.</p>
+              <p className="text-xs text-muted-foreground shrink-0 ml-2">{goalDescription.length}/200</p>
             </div>
           </div>
 
-          {/* Auto-agent confirmation */}
-          {agentInfo && (
+          {/* Customise agent toggle */}
+          {goalDescription.trim() && (
             <div className="rounded-lg border bg-primary/5 p-3">
               <div className="flex items-start gap-2.5">
                 <Bot className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                 <div className="text-sm">
-                  <span>We've set up a <strong>{agentInfo.name}</strong> for you — {agentInfo.desc}. </span>
+                  <span>We'll set up an agent based on your goal. </span>
                   <button
                     onClick={() => setShowCustomise(!showCustomise)}
                     className="text-primary font-medium hover:underline"
@@ -129,7 +104,7 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label className="text-xs">Agent Name</Label>
-                  <Input defaultValue={agentInfo?.name} />
+                  <Input defaultValue="Voice Agent" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs">LLM Model</Label>
@@ -146,7 +121,7 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
               <div className="space-y-2">
                 <Label className="text-xs">System Prompt</Label>
                 <Textarea
-                  defaultValue={`You are a ${agentInfo?.name || "voice agent"}. Your goal is to ${agentInfo?.desc || "assist callers"}.`}
+                  defaultValue="You are a voice agent. Follow the campaign goal and assist callers professionally."
                   className="min-h-[80px] text-sm"
                 />
               </div>
@@ -237,7 +212,7 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button onClick={handleLaunch} disabled={!name.trim() || !goal}>
+            <Button onClick={handleLaunch} disabled={!name.trim() || !goalDescription.trim()}>
               Launch Campaign
             </Button>
           </div>
