@@ -104,7 +104,7 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label className="text-xs">Agent Name</Label>
-                  <Input defaultValue={agentInfo?.name} />
+                  <Input defaultValue="Voice Agent" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs">LLM Model</Label>
