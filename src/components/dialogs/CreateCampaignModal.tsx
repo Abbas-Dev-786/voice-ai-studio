@@ -65,35 +65,28 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
             <p className="text-xs text-muted-foreground text-right">{name.length}/80</p>
           </div>
 
-          {/* Goal Pills */}
+          {/* Campaign Goal */}
           <div className="space-y-2">
-            <Label>Goal <span className="text-destructive">*</span></Label>
-            <div className="flex flex-wrap gap-2">
-              {goals.map((g) => (
-                <button
-                  key={g.id}
-                  onClick={() => { setGoal(g.id); setShowCustomise(false); }}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium border transition-all",
-                    goal === g.id
-                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                      : "bg-card text-foreground border-border hover:border-primary/40"
-                  )}
-                >
-                  <g.icon className="h-3.5 w-3.5" />
-                  {g.label}
-                </button>
-              ))}
+            <Label>Campaign Goal <span className="text-destructive">*</span></Label>
+            <Textarea
+              placeholder="e.g. Reach out to trial users who haven't booked a demo yet and schedule a 15-min product walkthrough"
+              value={goalDescription}
+              onChange={(e) => setGoalDescription(e.target.value.slice(0, 200))}
+              className="min-h-[80px] text-sm"
+            />
+            <div className="flex justify-between">
+              <p className="text-xs text-muted-foreground">Briefly describe what this campaign should achieve — this guides the agent's behavior.</p>
+              <p className="text-xs text-muted-foreground shrink-0 ml-2">{goalDescription.length}/200</p>
             </div>
           </div>
 
-          {/* Auto-agent confirmation */}
-          {agentInfo && (
+          {/* Customise agent toggle */}
+          {goalDescription.trim() && (
             <div className="rounded-lg border bg-primary/5 p-3">
               <div className="flex items-start gap-2.5">
                 <Bot className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                 <div className="text-sm">
-                  <span>We've set up a <strong>{agentInfo.name}</strong> for you — {agentInfo.desc}. </span>
+                  <span>We'll set up an agent based on your goal. </span>
                   <button
                     onClick={() => setShowCustomise(!showCustomise)}
                     className="text-primary font-medium hover:underline"
