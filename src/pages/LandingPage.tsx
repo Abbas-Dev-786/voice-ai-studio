@@ -48,7 +48,7 @@ const features = [
   },
   {
     icon: Globe,
-    title: "30+ Integrations",
+    title: "10+ Integrations",
     description:
       "Connect with HubSpot, Salesforce, Slack, Zapier, and custom webhooks to sync your entire workflow.",
   },
@@ -481,7 +481,7 @@ export default function LandingPage() {
               <Card
                 key={plan.name}
                 className={cn(
-                  "relative transition-shadow",
+                  "relative transition-shadow h-full",
                   plan.popular
                     ? "border-primary shadow-lg shadow-primary/10 scale-[1.02]"
                     : "border-border/60 hover:shadow-md",
@@ -638,15 +638,15 @@ export default function LandingPage() {
             {[
               {
                 title: "Product",
-                links: ["Features", "Pricing", "Integrations", "API Docs"],
+                links: ["Features", "Pricing", "Integrations"],
               },
               {
                 title: "Company",
-                links: ["About", "Blog", "Careers", "Contact"],
+                links: ["About", "Blog", "Contact"],
               },
               {
                 title: "Legal",
-                links: ["Privacy", "Terms", "Security", "GDPR"],
+                links: ["Privacy", "Terms and Conditions", "Cookie Policy"],
               },
             ].map((col) => (
               <div key={col.title}>
