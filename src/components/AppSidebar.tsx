@@ -1,11 +1,27 @@
 import {
-  LayoutDashboard, BarChart3, Megaphone, PhoneCall, Phone, BookOpen,
-  Puzzle, Settings, Bot,
+  LayoutDashboard,
+  BarChart3,
+  Megaphone,
+  PhoneCall,
+  Phone,
+  BookOpen,
+  Puzzle,
+  Settings,
+  Bot,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
-  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
-  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarHeader,
+  SidebarFooter,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 const navGroups = [
@@ -22,16 +38,19 @@ const navGroups = [
     items: [
       { title: "Agents", url: "/agents", icon: Bot, badge: "3" },
       { title: "Conversations", url: "/calls", icon: PhoneCall },
-      { title: "Phone Numbers", url: "/phone-numbers", icon: Phone, badge: "2" },
+      {
+        title: "Phone Numbers",
+        url: "/phone-numbers",
+        icon: Phone,
+        badge: "2",
+      },
       { title: "Knowledge Base", url: "/knowledge", icon: BookOpen },
       { title: "Integrations", url: "/integrations", icon: Puzzle },
     ],
   },
   {
     label: "Settings",
-    items: [
-      { title: "Settings", url: "/settings", icon: Settings },
-    ],
+    items: [{ title: "Settings", url: "/settings", icon: Settings }],
   },
 ];
 
@@ -47,7 +66,9 @@ export function AppSidebar() {
             <Phone className="h-4 w-4 text-primary-foreground" />
           </div>
           {!collapsed && (
-            <span className="text-lg font-semibold font-display tracking-tight">VoiceAI</span>
+            <span className="text-lg font-semibold font-display tracking-tight">
+              DialBridge
+            </span>
           )}
         </div>
       </SidebarHeader>
@@ -55,10 +76,14 @@ export function AppSidebar() {
       <SidebarContent>
         {navGroups.map((group) => (
           <SidebarGroup key={group.label}>
-            {!collapsed && <SidebarGroupLabel className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">{group.label}</SidebarGroupLabel>}
+            {!collapsed && (
+              <SidebarGroupLabel className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+                {group.label}
+              </SidebarGroupLabel>
+            )}
             <SidebarGroupContent>
               <SidebarMenu>
-                {group.items.map((item: any) => (
+                {group.items.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
                       <NavLink
@@ -71,7 +96,9 @@ export function AppSidebar() {
                           <span className="flex-1 flex items-center justify-between">
                             <span>{item.title}</span>
                             {item.badge && (
-                              <span className="ml-auto rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">{item.badge}</span>
+                              <span className="ml-auto rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                                {item.badge}
+                              </span>
                             )}
                           </span>
                         )}

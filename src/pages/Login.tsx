@@ -26,7 +26,7 @@ export default function Login() {
             Welcome back
           </h1>
           <p className="text-sm text-muted-foreground">
-            Sign in to your VoiceAI account
+            Sign in to your DialBridge account
           </p>
         </div>
 
