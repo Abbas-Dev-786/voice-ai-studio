@@ -60,9 +60,9 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="p-4">
+      <SidebarHeader className="py-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-sm">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-sm flex-shrink-0">
             <Phone className="h-4 w-4 text-primary-foreground" />
           </div>
           {!collapsed && (
