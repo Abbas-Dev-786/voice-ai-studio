@@ -33,10 +33,8 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
   const [showOptional, setShowOptional] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const agentInfo = goal ? goalAgentMap[goal] : null;
-
   const handleLaunch = () => {
-    if (!name.trim() || !goal) return;
+    if (!name.trim() || !goalDescription.trim()) return;
 
     // No contacts = save as draft
     toast({
