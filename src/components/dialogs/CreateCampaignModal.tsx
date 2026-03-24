@@ -28,7 +28,7 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
   const navigate = useNavigate();
   const { toast } = useToast();
   const [name, setName] = useState("");
-  const [goal, setGoal] = useState<string | null>(null);
+  const [goalDescription, setGoalDescription] = useState("");
   const [showCustomise, setShowCustomise] = useState(false);
   const [showOptional, setShowOptional] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
