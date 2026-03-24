@@ -212,7 +212,7 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button onClick={handleLaunch} disabled={!name.trim() || !goal}>
+            <Button onClick={handleLaunch} disabled={!name.trim() || !goalDescription.trim()}>
               Launch Campaign
             </Button>
           </div>
