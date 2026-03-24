@@ -8,25 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Slider } from "@/components/ui/slider";
-import { Bot, ChevronDown, Upload, Megaphone, Users, CalendarSearch, MessageSquare, Target } from "lucide-react";
+import { Bot, ChevronDown, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-
-const goals = [
-  { id: "book-demos", label: "Book Demos", icon: CalendarSearch },
-  { id: "qualify-leads", label: "Qualify Leads", icon: Target },
-  { id: "re-engage", label: "Re-engage", icon: Users },
-  { id: "run-survey", label: "Run Survey", icon: MessageSquare },
-  { id: "custom", label: "Custom", icon: Megaphone },
-];
-
-const goalAgentMap: Record<string, { name: string; desc: string }> = {
-  "book-demos": { name: "Sales Assistant", desc: "qualifies leads and books demo calls" },
-  "qualify-leads": { name: "Lead Qualifier", desc: "asks qualifying questions and scores leads" },
-  "re-engage": { name: "Re-engagement Agent", desc: "reconnects with inactive contacts" },
-  "run-survey": { name: "Survey Agent", desc: "conducts structured surveys and collects responses" },
-  "custom": { name: "Custom Agent", desc: "fully customizable agent — set your own prompt" },
-};
 
 const llmModels = [
   { id: "gpt-4o", name: "GPT-4o" },
