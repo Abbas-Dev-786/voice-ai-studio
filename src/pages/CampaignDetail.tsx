@@ -731,6 +731,29 @@ export default function CampaignDetail() {
             <Button size="sm" onClick={() => setUploadDocOpen(true)}><Plus className="mr-1.5 h-3.5 w-3.5" /> Add Knowledge</Button>
           </div>
 
+          {/* Sync Status Indicator */}
+          <div className={cn(
+            "flex items-center gap-3 rounded-lg border px-4 py-3",
+            "border-success/40 bg-success/5"
+          )}>
+            <div className="h-2.5 w-2.5 rounded-full bg-success shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-success">Knowledge base is synced to ElevenLabs</p>
+              <p className="text-xs text-muted-foreground">Last synced 2 hours ago</p>
+            </div>
+            <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5">
+              <RefreshCw className="h-3 w-3" /> Sync Now
+            </Button>
+          </div>
+
+          {/* Sync warning for live campaigns */}
+          {campaign.status === "live" && (
+            <div className="flex items-start gap-2 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2">
+              <AlertTriangle className="h-3.5 w-3.5 text-warning mt-0.5 shrink-0" />
+              <p className="text-xs text-warning">Knowledge base is out of sync. New calls will use the updated knowledge base once synced. Calls already in progress are unaffected.</p>
+            </div>
+          )}
+
           <div className="space-y-2">
             {knowledgeDocs.map((doc) => (
               <div key={doc.id} className="flex items-center gap-3 rounded-lg border bg-card p-3 hover:shadow-sm transition-shadow">
@@ -1010,6 +1033,7 @@ export default function CampaignDetail() {
           {/* Danger zone */}
           <Card className="border-destructive/30">
             <CardContent className="pt-5">
+              <p className="text-xs text-muted-foreground mb-3">Deleting this campaign will free the assigned agent for use in other campaigns.</p>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <p className="font-medium text-destructive">Danger Zone</p>
