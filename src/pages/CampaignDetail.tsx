@@ -18,7 +18,6 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { BuyPhoneNumberDialog } from "@/components/dialogs/BuyPhoneNumberDialog";
 import { UploadDocumentDialog } from "@/components/dialogs/UploadDocumentDialog";
 import { ConnectIntegrationDialog } from "@/components/dialogs/ConnectIntegrationDialog";
-import { CreateAgentDialog } from "@/components/dialogs/CreateAgentDialog";
 import { UploadContactsDialog } from "@/components/dialogs/UploadContactsDialog";
 import { DeleteConfirmDialog } from "@/components/dialogs/DeleteConfirmDialog";
 import { ExportDataDialog } from "@/components/dialogs/ExportDataDialog";
@@ -28,6 +27,7 @@ import {
   BarChart3, PhoneCall, PhoneOff, Voicemail, UserCheck, ArrowRight,
   BookOpen, Zap, Volume2, Copy, Edit, Hash, DollarSign, Activity,
   Plus, Trash2, Search, Upload, ExternalLink, File, UserPlus, Contact,
+  AlertTriangle, Loader2, RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -58,28 +58,10 @@ const callColumns: Column<typeof campaignCalls[0]>[] = [
   { key: "cost", label: "Cost", hideOnMobile: true, render: (r) => <span className="font-mono text-xs">{r.cost}</span> },
 ];
 
-const campaignAgents = [
-  { id: "1", name: "Sales Bot Pro", model: "GPT-4o", voice: "Nova", status: "live" as const, calls: 642, successRate: "72%", role: "Primary outbound" },
-  { id: "2", name: "Follow-up Agent", model: "GPT-4o-mini", voice: "Alloy", status: "live" as const, calls: 200, successRate: "58%", role: "Retry & follow-up" },
-  { id: "3", name: "Survey Agent", model: "GPT-3.5", voice: "Echo", status: "draft" as const, calls: 0, successRate: "—", role: "Post-call survey" },
-];
-
-const agentColumns: Column<typeof campaignAgents[0]>[] = [
-  { key: "name", label: "Agent", render: (r) => (
-    <div className="flex items-center gap-2">
-      <div className="rounded-lg bg-primary/10 p-1.5"><Bot className="h-3.5 w-3.5 text-primary" /></div>
-      <div>
-        <p className="font-medium text-sm">{r.name}</p>
-        <p className="text-xs text-muted-foreground">{r.role}</p>
-      </div>
-    </div>
-  )},
-  { key: "model", label: "Model", hideOnMobile: true, render: (r) => <Badge variant="secondary" className="text-xs">{r.model}</Badge> },
-  { key: "voice", label: "Voice", hideOnMobile: true },
-  { key: "status", label: "Status", render: (r) => <StatusBadge status={r.status} /> },
-  { key: "calls", label: "Calls", hideOnMobile: true, sortable: true },
-  { key: "successRate", label: "Success", hideOnMobile: true },
-];
+// Single assigned agent per campaign
+const campaignAgent = {
+  id: "1", name: "Sales Bot Pro", model: "GPT-4o", voice: "Nova", status: "live" as const, calls: 642, successRate: "72%",
+};
 
 const initialContacts = [
   { id: "1", name: "Sarah Johnson", phone: "+1 (555) 101-0101", email: "sarah@example.com", status: "called" as const, outcome: "Booked demo", lastCall: "5 min ago" },
@@ -92,10 +74,13 @@ const initialContacts = [
 
 type ContactType = typeof initialContacts[number];
 
-const phoneNumbers = [
-  { id: "1", number: "+1 (555) 100-2000", label: "Primary Outbound", type: "Local", callsMade: 642, status: "live" as const },
-  { id: "2", number: "+1 (555) 200-3000", label: "Backup Line", type: "Local", callsMade: 200, status: "live" as const },
-  { id: "3", number: "+1 (800) 400-5000", label: "Toll-free Fallback", type: "Toll-free", callsMade: 0, status: "paused" as const },
+// Single assigned phone number
+const assignedPhone = { id: "1", number: "+1 (555) 100-2000", label: "Primary Outbound", type: "Local", callsMade: 642, status: "live" as const };
+
+const workspacePhones = [
+  { id: "2", number: "+1 (555) 200-3000", label: "Backup Line", type: "Local", campaign: "—" },
+  { id: "3", number: "+1 (555) 300-4000", label: "Support Line", type: "Toll-free", campaign: "Product Launch" },
+  { id: "4", number: "+1 (800) 400-5000", label: "SIP Trunk", type: "SIP", campaign: "—" },
 ];
 
 const knowledgeDocs = [
