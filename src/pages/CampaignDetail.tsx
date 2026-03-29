@@ -901,16 +901,12 @@ export default function CampaignDetail() {
 
             <Card className="p-4 sm:p-6">
               <h3 className="font-semibold mb-4">Agent Performance</h3>
-              <div className="space-y-4">
-                {campaignAgents.filter(a => a.calls > 0).map((agent) => (
-                  <div key={agent.id} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{agent.name}</span>
-                      <span className="text-sm text-muted-foreground">{agent.calls} calls · {agent.successRate}</span>
-                    </div>
-                    <Progress value={parseInt(agent.successRate)} className="h-2" />
-                  </div>
-                ))}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{campaignAgent.name}</span>
+                  <span className="text-sm text-muted-foreground">{campaignAgent.calls} calls · {campaignAgent.successRate}</span>
+                </div>
+                <Progress value={parseInt(campaignAgent.successRate)} className="h-2" />
               </div>
             </Card>
           </div>
@@ -1031,7 +1027,13 @@ export default function CampaignDetail() {
       {/* ── Dialogs ─────────────────────────── */}
       <BuyPhoneNumberDialog open={buyNumberOpen} onOpenChange={(open) => { setBuyNumberOpen(open); if (!open && buyNumberOpen) toast({ title: "Phone number purchased", description: "The number has been added to this campaign." }); }} />
       <UploadDocumentDialog open={uploadDocOpen} onOpenChange={(open) => { setUploadDocOpen(open); if (!open && uploadDocOpen) toast({ title: "Document uploaded", description: "Knowledge base has been updated." }); }} />
-      <CreateAgentDialog open={createAgentOpen} onOpenChange={setCreateAgentOpen} onCreated={(agent) => toast({ title: "Agent created", description: `${agent.name} has been added to this campaign.` })} />
+      <DeleteConfirmDialog
+        open={changeAgentOpen}
+        onOpenChange={setChangeAgentOpen}
+        title="Change Agent"
+        description="Changing the agent will require re-syncing the knowledge base. The campaign will be briefly paused."
+        onConfirm={() => { setChangeAgentOpen(false); toast({ title: "Agent changed", description: "The campaign agent has been updated." }); }}
+      />
       <UploadContactsDialog open={uploadContactsOpen} onOpenChange={setUploadContactsOpen} onImported={(count) => toast({ title: "Contacts imported", description: `${count} contacts have been added to this campaign.` })} />
       <ConnectIntegrationDialog open={connectIntOpen} onOpenChange={(open) => { setConnectIntOpen(open); if (!open && connectIntOpen) toast({ title: "Integration updated", description: `${connectTarget?.name || "Integration"} configuration saved.` }); }} integration={connectTarget} />
       <ExportDataDialog open={exportOpen} onOpenChange={setExportOpen} title="Export Campaign Data" description="Download campaign data in your preferred format." />
