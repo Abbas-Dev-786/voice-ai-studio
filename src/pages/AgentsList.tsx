@@ -6,11 +6,11 @@ import { Bot } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 
 const agents = [
-  { id: "1", name: "Sales Bot Pro", status: "live" as const, model: "GPT-4o", voice: "Rachel", campaignsCount: 2 },
-  { id: "2", name: "Support AI", status: "live" as const, model: "Claude 3.5 Sonnet", voice: "Adam", campaignsCount: 1 },
-  { id: "3", name: "Outreach Pro", status: "paused" as const, model: "GPT-4o Mini", voice: "Bella", campaignsCount: 1 },
-  { id: "4", name: "Follow-up Agent", status: "live" as const, model: "GPT-4o", voice: "Antoni", campaignsCount: 1 },
-  { id: "5", name: "Survey Agent", status: "draft" as const, model: "Gemini 1.5 Flash", voice: "Elli", campaignsCount: 0 },
+  { id: "1", name: "Sales Bot Pro", status: "live" as const, model: "GPT-4o", voice: "Rachel", activeCampaign: "Q1 Outreach" as string | null },
+  { id: "2", name: "Support AI", status: "live" as const, model: "Claude 3.5 Sonnet", voice: "Adam", activeCampaign: null },
+  { id: "3", name: "Outreach Pro", status: "paused" as const, model: "GPT-4o Mini", voice: "Bella", activeCampaign: null },
+  { id: "4", name: "Follow-up Agent", status: "live" as const, model: "GPT-4o", voice: "Antoni", activeCampaign: "Re-engagement" as string | null },
+  { id: "5", name: "Survey Agent", status: "draft" as const, model: "Gemini 1.5 Flash", voice: "Elli", activeCampaign: null },
 ];
 
 const columns: Column<typeof agents[0]>[] = [
@@ -20,8 +20,10 @@ const columns: Column<typeof agents[0]>[] = [
   )},
   { key: "voice", label: "Voice", sortable: true, hideOnMobile: true },
   { key: "status", label: "Status", render: (r) => <StatusBadge status={r.status} /> },
-  { key: "campaignsCount", label: "Campaigns", sortable: true, hideOnMobile: true, render: (r) => (
-    <span className="text-sm text-muted-foreground">{r.campaignsCount}</span>
+  { key: "activeCampaign", label: "Assignment", hideOnMobile: true, render: (r) => (
+    r.activeCampaign
+      ? <Badge variant="default" className="text-xs font-normal bg-primary/10 text-primary border-0">Active in {r.activeCampaign}</Badge>
+      : <span className="text-sm text-muted-foreground">Available</span>
   )},
 ];
 
@@ -33,7 +35,7 @@ export default function AgentsList() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Agents</h1>
-          <p className="text-sm text-muted-foreground">Agent configurations & templates. Create and manage agents within campaigns.</p>
+          <p className="text-sm text-muted-foreground">Agent configurations & templates. Agents are workspace-level assets — assign them to campaigns.</p>
         </div>
       </div>
 
