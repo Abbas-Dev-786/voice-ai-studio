@@ -36,7 +36,7 @@ const navGroups = [
   {
     label: "Setup",
     items: [
-      { title: "Agents", url: "/agents", icon: Bot, badge: "3" },
+      { title: "Agents", url: "/agents", icon: Bot, badge: "2/5" },
       { title: "Conversations", url: "/calls", icon: PhoneCall },
       {
         title: "Phone Numbers",

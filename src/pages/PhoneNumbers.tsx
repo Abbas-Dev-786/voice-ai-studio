@@ -10,10 +10,10 @@ import { useState } from "react";
 import { ImportSIPDialog } from "@/components/dialogs/ImportSIPDialog";
 
 const numbers = [
-  { id: "1", number: "+1 (555) 100-2000", label: "Primary Outbound", provider: "Twilio", agent: "Sales Bot", status: "live" as const, type: "Local", calls: 642 },
-  { id: "2", number: "+1 (555) 200-3000", label: "Backup Line", provider: "Twilio", agent: "Sales Bot", status: "live" as const, type: "Local", calls: 200 },
-  { id: "3", number: "+1 (555) 300-4000", label: "Support Line", provider: "Twilio", agent: "Support AI", status: "live" as const, type: "Toll-free", calls: 156 },
-  { id: "4", number: "+1 (800) 400-5000", label: "SIP Trunk", provider: "SIP", agent: "—", status: "paused" as const, type: "SIP", calls: 0 },
+  { id: "1", number: "+1 (555) 100-2000", label: "Primary Outbound", provider: "Twilio", campaign: "Q1 Outreach", status: "live" as const, type: "Local", calls: 642 },
+  { id: "2", number: "+1 (555) 200-3000", label: "Backup Line", provider: "Twilio", campaign: "Q1 Outreach", status: "live" as const, type: "Local", calls: 200 },
+  { id: "3", number: "+1 (555) 300-4000", label: "Support Line", provider: "Twilio", campaign: "—", status: "live" as const, type: "Toll-free", calls: 156 },
+  { id: "4", number: "+1 (800) 400-5000", label: "SIP Trunk", provider: "SIP", campaign: "—", status: "paused" as const, type: "SIP", calls: 0 },
 ];
 
 const columns: Column<typeof numbers[0]>[] = [
@@ -22,7 +22,11 @@ const columns: Column<typeof numbers[0]>[] = [
   { key: "provider", label: "Provider", hideOnMobile: true, render: (r) => (
     <Badge variant="secondary" className="text-xs font-normal">{r.provider}</Badge>
   )},
-  { key: "agent", label: "Assigned Agent", hideOnMobile: true },
+  { key: "campaign", label: "Assigned Campaign", hideOnMobile: true, render: (r) => (
+    r.campaign !== "—"
+      ? <Badge variant="default" className="text-xs font-normal bg-success/10 text-success border-0">Active · {r.campaign}</Badge>
+      : <span className="text-sm text-muted-foreground">Available</span>
+  )},
   { key: "type", label: "Type", hideOnMobile: true, render: (r) => <Badge variant="secondary">{r.type}</Badge> },
   { key: "calls", label: "Calls", hideOnMobile: true, sortable: true },
   { key: "status", label: "Status", render: (r) => <StatusBadge status={r.status} /> },

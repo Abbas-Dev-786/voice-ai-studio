@@ -18,7 +18,6 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { BuyPhoneNumberDialog } from "@/components/dialogs/BuyPhoneNumberDialog";
 import { UploadDocumentDialog } from "@/components/dialogs/UploadDocumentDialog";
 import { ConnectIntegrationDialog } from "@/components/dialogs/ConnectIntegrationDialog";
-import { CreateAgentDialog } from "@/components/dialogs/CreateAgentDialog";
 import { UploadContactsDialog } from "@/components/dialogs/UploadContactsDialog";
 import { DeleteConfirmDialog } from "@/components/dialogs/DeleteConfirmDialog";
 import { ExportDataDialog } from "@/components/dialogs/ExportDataDialog";
@@ -28,6 +27,7 @@ import {
   BarChart3, PhoneCall, PhoneOff, Voicemail, UserCheck, ArrowRight,
   BookOpen, Zap, Volume2, Copy, Edit, Hash, DollarSign, Activity,
   Plus, Trash2, Search, Upload, ExternalLink, File, UserPlus, Contact,
+  AlertTriangle, Loader2, RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -58,28 +58,10 @@ const callColumns: Column<typeof campaignCalls[0]>[] = [
   { key: "cost", label: "Cost", hideOnMobile: true, render: (r) => <span className="font-mono text-xs">{r.cost}</span> },
 ];
 
-const campaignAgents = [
-  { id: "1", name: "Sales Bot Pro", model: "GPT-4o", voice: "Nova", status: "live" as const, calls: 642, successRate: "72%", role: "Primary outbound" },
-  { id: "2", name: "Follow-up Agent", model: "GPT-4o-mini", voice: "Alloy", status: "live" as const, calls: 200, successRate: "58%", role: "Retry & follow-up" },
-  { id: "3", name: "Survey Agent", model: "GPT-3.5", voice: "Echo", status: "draft" as const, calls: 0, successRate: "—", role: "Post-call survey" },
-];
-
-const agentColumns: Column<typeof campaignAgents[0]>[] = [
-  { key: "name", label: "Agent", render: (r) => (
-    <div className="flex items-center gap-2">
-      <div className="rounded-lg bg-primary/10 p-1.5"><Bot className="h-3.5 w-3.5 text-primary" /></div>
-      <div>
-        <p className="font-medium text-sm">{r.name}</p>
-        <p className="text-xs text-muted-foreground">{r.role}</p>
-      </div>
-    </div>
-  )},
-  { key: "model", label: "Model", hideOnMobile: true, render: (r) => <Badge variant="secondary" className="text-xs">{r.model}</Badge> },
-  { key: "voice", label: "Voice", hideOnMobile: true },
-  { key: "status", label: "Status", render: (r) => <StatusBadge status={r.status} /> },
-  { key: "calls", label: "Calls", hideOnMobile: true, sortable: true },
-  { key: "successRate", label: "Success", hideOnMobile: true },
-];
+// Single assigned agent per campaign
+const campaignAgent = {
+  id: "1", name: "Sales Bot Pro", model: "GPT-4o", voice: "Nova", status: "live" as const, calls: 642, successRate: "72%",
+};
 
 const initialContacts = [
   { id: "1", name: "Sarah Johnson", phone: "+1 (555) 101-0101", email: "sarah@example.com", status: "called" as const, outcome: "Booked demo", lastCall: "5 min ago" },
@@ -92,10 +74,13 @@ const initialContacts = [
 
 type ContactType = typeof initialContacts[number];
 
-const phoneNumbers = [
-  { id: "1", number: "+1 (555) 100-2000", label: "Primary Outbound", type: "Local", callsMade: 642, status: "live" as const },
-  { id: "2", number: "+1 (555) 200-3000", label: "Backup Line", type: "Local", callsMade: 200, status: "live" as const },
-  { id: "3", number: "+1 (800) 400-5000", label: "Toll-free Fallback", type: "Toll-free", callsMade: 0, status: "paused" as const },
+// Single assigned phone number
+const assignedPhone = { id: "1", number: "+1 (555) 100-2000", label: "Primary Outbound", type: "Local", callsMade: 642, status: "live" as const };
+
+const workspacePhones = [
+  { id: "2", number: "+1 (555) 200-3000", label: "Backup Line", type: "Local", campaign: "—" },
+  { id: "3", number: "+1 (555) 300-4000", label: "Support Line", type: "Toll-free", campaign: "Product Launch" },
+  { id: "4", number: "+1 (800) 400-5000", label: "SIP Trunk", type: "SIP", campaign: "—" },
 ];
 
 const knowledgeDocs = [
@@ -186,7 +171,7 @@ export default function CampaignDetail() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [buyNumberOpen, setBuyNumberOpen] = useState(false);
   const [uploadDocOpen, setUploadDocOpen] = useState(false);
-  const [createAgentOpen, setCreateAgentOpen] = useState(false);
+  const [changeAgentOpen, setChangeAgentOpen] = useState(false);
   const [uploadContactsOpen, setUploadContactsOpen] = useState(false);
   const [connectIntOpen, setConnectIntOpen] = useState(false);
   const [connectTarget, setConnectTarget] = useState<any>(null);
@@ -363,8 +348,8 @@ export default function CampaignDetail() {
               </CardHeader>
               <CardContent className="space-y-1">
                 {[
-                  { label: "Agents", value: `${campaignAgents.length}`, click: "agents" },
-                  { label: "Phone Numbers", value: `${phoneNumbers.length}`, click: "phones" },
+                  { label: "Agent", value: campaignAgent.name, click: "agents" },
+                  { label: "Phone Number", value: assignedPhone.number, click: "phones" },
                   { label: "Knowledge Docs", value: `${knowledgeDocs.length}`, click: "knowledge" },
                   { label: "Integrations", value: `${campaignIntegrations.filter(i => i.status !== "Inactive").length} active`, click: "integrations" },
                   { label: "Contacts", value: `${contacts.length} / ${campaignSettings.contactListSize}`, click: "contacts" },
@@ -419,61 +404,59 @@ export default function CampaignDetail() {
       {/* ══════════════════════════════════════ */}
       {activeTab === "agents" && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-semibold">Campaign Agents</h2>
-              <p className="text-sm text-muted-foreground">Agents assigned to this campaign. Create new or assign existing agents.</p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm"><UserPlus className="mr-1.5 h-3.5 w-3.5" /> Assign Existing</Button>
-              <Button size="sm" onClick={() => setCreateAgentOpen(true)}><Plus className="mr-1.5 h-3.5 w-3.5" /> Create Agent</Button>
-            </div>
+          <div>
+            <h2 className="text-lg font-semibold">Assigned Agent</h2>
+            <p className="text-sm text-muted-foreground">This campaign uses a single agent. Manage agents on the Agents page.</p>
           </div>
-          <DataTable
-            columns={agentColumns}
-            data={campaignAgents}
-            searchKey="name"
-            searchPlaceholder="Search agents..."
-            onRowClick={(r) => navigate(`/agents/${r.id}`)}
-          />
 
-          {/* Quick agent config preview */}
-          <div className="grid gap-4 md:grid-cols-2">
-            {campaignAgents.filter(a => a.status !== "draft").map((agent) => (
-              <Card key={agent.id}>
-                <CardContent className="pt-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="rounded-lg bg-primary/10 p-2"><Bot className="h-4 w-4 text-primary" /></div>
-                      <div>
-                        <p className="font-medium text-sm">{agent.name}</p>
-                        <p className="text-xs text-muted-foreground">{agent.role}</p>
-                      </div>
-                    </div>
-                    <StatusBadge status={agent.status} />
+          <Card>
+            <CardContent className="pt-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-lg bg-primary/10 p-2.5"><Bot className="h-5 w-5 text-primary" /></div>
+                  <div>
+                    <p className="font-semibold">{campaignAgent.name}</p>
+                    <p className="text-xs text-muted-foreground">{campaignAgent.model} · {campaignAgent.voice}</p>
                   </div>
-                  <Separator className="mb-3" />
-                  <div className="grid grid-cols-3 gap-3 text-center">
-                    <div>
-                      <p className="text-lg font-bold">{agent.calls}</p>
-                      <p className="text-xs text-muted-foreground">Calls</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold">{agent.successRate}</p>
-                      <p className="text-xs text-muted-foreground">Success</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold">{agent.model}</p>
-                      <p className="text-xs text-muted-foreground">Model</p>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm" className="w-full mt-3" onClick={() => navigate(`/agents/${agent.id}`)}>
-                    View Details <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                </div>
+                <StatusBadge status={campaignAgent.status} />
+              </div>
+              <Separator className="mb-3" />
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-xl font-bold">{campaignAgent.calls}</p>
+                  <p className="text-xs text-muted-foreground">Calls</p>
+                </div>
+                <div>
+                  <p className="text-xl font-bold">{campaignAgent.successRate}</p>
+                  <p className="text-xs text-muted-foreground">Success Rate</p>
+                </div>
+                <div>
+                  <p className="text-xl font-bold">{campaignAgent.model}</p>
+                  <p className="text-xs text-muted-foreground">Model</p>
+                </div>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => navigate(`/agents/${campaignAgent.id}`)}>
+                  View Agent <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={campaign.status === "live" && !isPaused}
+                  onClick={() => setChangeAgentOpen(true)}
+                >
+                  Change Agent
+                </Button>
+              </div>
+              {campaign.status === "live" && !isPaused && (
+                <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3 text-warning" />
+                  Pause the campaign to change the agent.
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </div>
       )}
 
@@ -677,36 +660,50 @@ export default function CampaignDetail() {
       {/* ══════════════════════════════════════ */}
       {activeTab === "phones" && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-semibold">Phone Numbers</h2>
-              <p className="text-sm text-muted-foreground">{phoneNumbers.length} numbers assigned to this campaign</p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm"><Phone className="mr-1.5 h-3.5 w-3.5" /> Assign Existing</Button>
-              <Button size="sm" onClick={() => setBuyNumberOpen(true)}><Plus className="mr-1.5 h-3.5 w-3.5" /> Buy Number</Button>
-            </div>
+          <div>
+            <h2 className="text-lg font-semibold">Calling Number</h2>
+            <p className="text-sm text-muted-foreground">The number your contacts will see when receiving calls.</p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {phoneNumbers.map((pn) => (
-              <Card key={pn.id} className={cn("transition-shadow hover:shadow-md", pn.status === "live" && "ring-1 ring-success/20")}>
-                <CardContent className="pt-5 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-mono text-sm font-semibold">{pn.number}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{pn.label}</p>
-                    </div>
-                    <StatusBadge status={pn.status} />
+          {/* Assigned number */}
+          <Card className="ring-1 ring-success/20">
+            <CardContent className="pt-5 space-y-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-1">Assigned Number</p>
+                  <p className="font-mono text-sm font-semibold">{assignedPhone.number}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{assignedPhone.label} · {assignedPhone.type}</p>
+                </div>
+                <StatusBadge status={assignedPhone.status} />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>{assignedPhone.callsMade} calls made</span>
+                <Button variant="outline" size="sm" className="h-7 text-xs">Change Number</Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Other workspace numbers */}
+          <div>
+            <h3 className="text-sm font-medium mb-2 text-muted-foreground">Other workspace numbers</h3>
+            <div className="space-y-2">
+              {workspacePhones.map((pn) => (
+                <div key={pn.id} className="flex items-center justify-between rounded-lg border bg-card p-3">
+                  <div>
+                    <p className="font-mono text-sm">{pn.number}</p>
+                    <p className="text-xs text-muted-foreground">{pn.label} · {pn.type}</p>
                   </div>
-                  <Separator />
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{pn.type}</span>
-                    <span>{pn.callsMade} calls made</span>
+                  <div className="text-right">
+                    {pn.campaign !== "—" ? (
+                      <Badge variant="secondary" className="text-xs">In use · {pn.campaign}</Badge>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Available</span>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              ))}
+            </div>
           </div>
 
           <Card>
@@ -715,8 +712,6 @@ export default function CampaignDetail() {
             </CardHeader>
             <CardContent className="divide-y divide-border">
               <InfoRow label="Display Name" value="Acme Corporation" />
-              <InfoRow label="Rotation Strategy" value="Round-robin" />
-              <InfoRow label="Fallback Number" value="+1 (800) 400-5000" mono />
               <InfoRow label="CNAM Registration" value="Active" />
             </CardContent>
           </Card>
@@ -735,6 +730,29 @@ export default function CampaignDetail() {
             </div>
             <Button size="sm" onClick={() => setUploadDocOpen(true)}><Plus className="mr-1.5 h-3.5 w-3.5" /> Add Knowledge</Button>
           </div>
+
+          {/* Sync Status Indicator */}
+          <div className={cn(
+            "flex items-center gap-3 rounded-lg border px-4 py-3",
+            "border-success/40 bg-success/5"
+          )}>
+            <div className="h-2.5 w-2.5 rounded-full bg-success shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-success">Knowledge base is synced to ElevenLabs</p>
+              <p className="text-xs text-muted-foreground">Last synced 2 hours ago</p>
+            </div>
+            <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5">
+              <RefreshCw className="h-3 w-3" /> Sync Now
+            </Button>
+          </div>
+
+          {/* Sync warning for live campaigns */}
+          {campaign.status === "live" && (
+            <div className="flex items-start gap-2 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2">
+              <AlertTriangle className="h-3.5 w-3.5 text-warning mt-0.5 shrink-0" />
+              <p className="text-xs text-warning">Knowledge base is out of sync. New calls will use the updated knowledge base once synced. Calls already in progress are unaffected.</p>
+            </div>
+          )}
 
           <div className="space-y-2">
             {knowledgeDocs.map((doc) => (
@@ -906,16 +924,12 @@ export default function CampaignDetail() {
 
             <Card className="p-4 sm:p-6">
               <h3 className="font-semibold mb-4">Agent Performance</h3>
-              <div className="space-y-4">
-                {campaignAgents.filter(a => a.calls > 0).map((agent) => (
-                  <div key={agent.id} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{agent.name}</span>
-                      <span className="text-sm text-muted-foreground">{agent.calls} calls · {agent.successRate}</span>
-                    </div>
-                    <Progress value={parseInt(agent.successRate)} className="h-2" />
-                  </div>
-                ))}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{campaignAgent.name}</span>
+                  <span className="text-sm text-muted-foreground">{campaignAgent.calls} calls · {campaignAgent.successRate}</span>
+                </div>
+                <Progress value={parseInt(campaignAgent.successRate)} className="h-2" />
               </div>
             </Card>
           </div>
@@ -1019,6 +1033,7 @@ export default function CampaignDetail() {
           {/* Danger zone */}
           <Card className="border-destructive/30">
             <CardContent className="pt-5">
+              <p className="text-xs text-muted-foreground mb-3">Deleting this campaign will free the assigned agent for use in other campaigns.</p>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <p className="font-medium text-destructive">Danger Zone</p>
@@ -1036,7 +1051,13 @@ export default function CampaignDetail() {
       {/* ── Dialogs ─────────────────────────── */}
       <BuyPhoneNumberDialog open={buyNumberOpen} onOpenChange={(open) => { setBuyNumberOpen(open); if (!open && buyNumberOpen) toast({ title: "Phone number purchased", description: "The number has been added to this campaign." }); }} />
       <UploadDocumentDialog open={uploadDocOpen} onOpenChange={(open) => { setUploadDocOpen(open); if (!open && uploadDocOpen) toast({ title: "Document uploaded", description: "Knowledge base has been updated." }); }} />
-      <CreateAgentDialog open={createAgentOpen} onOpenChange={setCreateAgentOpen} onCreated={(agent) => toast({ title: "Agent created", description: `${agent.name} has been added to this campaign.` })} />
+      <DeleteConfirmDialog
+        open={changeAgentOpen}
+        onOpenChange={setChangeAgentOpen}
+        title="Change Agent"
+        description="Changing the agent will require re-syncing the knowledge base. The campaign will be briefly paused."
+        onConfirm={() => { setChangeAgentOpen(false); toast({ title: "Agent changed", description: "The campaign agent has been updated." }); }}
+      />
       <UploadContactsDialog open={uploadContactsOpen} onOpenChange={setUploadContactsOpen} onImported={(count) => toast({ title: "Contacts imported", description: `${count} contacts have been added to this campaign.` })} />
       <ConnectIntegrationDialog open={connectIntOpen} onOpenChange={(open) => { setConnectIntOpen(open); if (!open && connectIntOpen) toast({ title: "Integration updated", description: `${connectTarget?.name || "Integration"} configuration saved.` }); }} integration={connectTarget} />
       <ExportDataDialog open={exportOpen} onOpenChange={setExportOpen} title="Export Campaign Data" description="Download campaign data in your preferred format." />
