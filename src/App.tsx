@@ -25,6 +25,7 @@ import KnowledgeBase from "@/pages/KnowledgeBase";
 import Integrations from "@/pages/Integrations";
 import WebhookLogs from "@/pages/WebhookLogs";
 import GeneralSettings from "@/pages/SettingsGeneral";
+import AuditLogs from "@/pages/AuditLogs";
 import SettingsTeam from "@/pages/SettingsTeam";
 import SettingsBilling from "@/pages/SettingsBilling";
 import SettingsAPI from "@/pages/SettingsAPI";
