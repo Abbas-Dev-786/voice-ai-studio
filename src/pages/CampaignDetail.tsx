@@ -15,24 +15,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Textarea } from "@/components/ui/textarea";
 import { BuyPhoneNumberDialog } from "@/components/dialogs/BuyPhoneNumberDialog";
 import { UploadDocumentDialog } from "@/components/dialogs/UploadDocumentDialog";
 import { ConnectIntegrationDialog } from "@/components/dialogs/ConnectIntegrationDialog";
 import { UploadContactsDialog } from "@/components/dialogs/UploadContactsDialog";
 import { DeleteConfirmDialog } from "@/components/dialogs/DeleteConfirmDialog";
 import { ExportDataDialog } from "@/components/dialogs/ExportDataDialog";
+import { AddContactDialog } from "@/components/dialogs/AddContactDialog";
+import { ImportContactsDialog } from "@/components/dialogs/ImportContactsDialog";
 import {
   ChevronLeft, Phone, CheckCircle, XCircle, Clock, Pause, Download, Play,
   Bot, FileText, Globe, Link2, Settings, Calendar, Users, TrendingUp,
   BarChart3, PhoneCall, PhoneOff, Voicemail, UserCheck, ArrowRight,
   BookOpen, Zap, Volume2, Copy, Edit, Hash, DollarSign, Activity,
   Plus, Trash2, Search, Upload, ExternalLink, File, UserPlus, Contact,
-  AlertTriangle, Loader2, RefreshCw,
+  AlertTriangle, Loader2, RefreshCw, Ban, Archive, CalendarCheck, PlayCircle,
+  StopCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
+  Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line,
 } from "recharts";
 
 /* ── Mock Data ─────────────────────────────────────────── */
@@ -42,10 +46,10 @@ const campaignCalls = [
   { id: "c2", contact: "+1 (555) 202-0202", contactName: "Mike Chen", status: "live" as const, duration: "3:42", outcome: "Interested", sentiment: "Positive", time: "12 min ago", cost: "$0.18", agent: "Sales Bot Pro" },
   { id: "c3", contact: "+1 (555) 303-0303", contactName: "Lisa Park", status: "error" as const, duration: "0:08", outcome: "No answer", sentiment: "—", time: "15 min ago", cost: "$0.02", agent: "Sales Bot Pro" },
   { id: "c4", contact: "+1 (555) 404-0404", contactName: "David Kim", status: "live" as const, duration: "1:55", outcome: "Not interested", sentiment: "Negative", time: "22 min ago", cost: "$0.09", agent: "Sales Bot Pro" },
-  { id: "c5", contact: "+1 (555) 505-0505", contactName: "Emma Wilson", status: "paused" as const, duration: "—", outcome: "Pending", sentiment: "—", time: "Scheduled", cost: "—", agent: "Follow-up Agent" },
+  { id: "c5", contact: "+1 (555) 505-0505", contactName: "Emma Wilson", status: "paused" as const, duration: "—", outcome: "Pending", sentiment: "—", time: "Scheduled", cost: "—", agent: "Sales Bot Pro" },
   { id: "c6", contact: "+1 (555) 606-0606", contactName: "Tom Brown", status: "live" as const, duration: "4:12", outcome: "Booked demo", sentiment: "Positive", time: "30 min ago", cost: "$0.21", agent: "Sales Bot Pro" },
   { id: "c7", contact: "+1 (555) 707-0707", contactName: "Ana Garcia", status: "error" as const, duration: "0:03", outcome: "Busy", sentiment: "—", time: "35 min ago", cost: "$0.01", agent: "Sales Bot Pro" },
-  { id: "c8", contact: "+1 (555) 808-0808", contactName: "James Lee", status: "live" as const, duration: "2:48", outcome: "Follow-up", sentiment: "Neutral", time: "42 min ago", cost: "$0.14", agent: "Follow-up Agent" },
+  { id: "c8", contact: "+1 (555) 808-0808", contactName: "James Lee", status: "live" as const, duration: "2:48", outcome: "Follow-up", sentiment: "Neutral", time: "42 min ago", cost: "$0.14", agent: "Sales Bot Pro" },
 ];
 
 const callColumns: Column<typeof campaignCalls[0]>[] = [
@@ -58,23 +62,26 @@ const callColumns: Column<typeof campaignCalls[0]>[] = [
   { key: "cost", label: "Cost", hideOnMobile: true, render: (r) => <span className="font-mono text-xs">{r.cost}</span> },
 ];
 
-// Single assigned agent per campaign
 const campaignAgent = {
   id: "1", name: "Sales Bot Pro", model: "GPT-4o", voice: "Nova", status: "live" as const, calls: 642, successRate: "72%",
 };
 
-const initialContacts = [
-  { id: "1", name: "Sarah Johnson", phone: "+1 (555) 101-0101", email: "sarah@example.com", status: "called" as const, outcome: "Booked demo", lastCall: "5 min ago" },
-  { id: "2", name: "Mike Chen", phone: "+1 (555) 202-0202", email: "mike@example.com", status: "called" as const, outcome: "Interested", lastCall: "12 min ago" },
-  { id: "3", name: "Lisa Park", phone: "+1 (555) 303-0303", email: "lisa@example.com", status: "failed" as const, outcome: "No answer", lastCall: "15 min ago" },
-  { id: "4", name: "David Kim", phone: "+1 (555) 404-0404", email: "david@example.com", status: "called" as const, outcome: "Not interested", lastCall: "22 min ago" },
-  { id: "5", name: "Emma Wilson", phone: "+1 (555) 505-0505", email: "emma@example.com", status: "pending" as const, outcome: "—", lastCall: "—" },
-  { id: "6", name: "Tom Brown", phone: "+1 (555) 606-0606", email: "tom@example.com", status: "called" as const, outcome: "Booked demo", lastCall: "30 min ago" },
+type ContactStatus = "pending" | "calling" | "called" | "failed" | "opted_out" | "do_not_call";
+
+const initialContacts: {
+  id: string; name: string; phone: string; email: string; company: string;
+  status: ContactStatus; outcome: string; lastCall: string; retryCount: number;
+}[] = [
+  { id: "1", name: "Sarah Johnson", phone: "+1 (555) 101-0101", email: "sarah@example.com", company: "Acme Inc", status: "called", outcome: "Booked demo", lastCall: "5 min ago", retryCount: 0 },
+  { id: "2", name: "Mike Chen", phone: "+1 (555) 202-0202", email: "mike@example.com", company: "TechCorp", status: "called", outcome: "Interested", lastCall: "12 min ago", retryCount: 0 },
+  { id: "3", name: "Lisa Park", phone: "+1 (555) 303-0303", email: "lisa@example.com", company: "StartupCo", status: "failed", outcome: "No answer", lastCall: "15 min ago", retryCount: 2 },
+  { id: "4", name: "David Kim", phone: "+1 (555) 404-0404", email: "david@example.com", company: "BigCo", status: "called", outcome: "Not interested", lastCall: "22 min ago", retryCount: 0 },
+  { id: "5", name: "Emma Wilson", phone: "+1 (555) 505-0505", email: "emma@example.com", company: "DesignLab", status: "pending", outcome: "—", lastCall: "—", retryCount: 0 },
+  { id: "6", name: "Tom Brown", phone: "+1 (555) 606-0606", email: "tom@example.com", company: "MediaGroup", status: "called", outcome: "Booked demo", lastCall: "30 min ago", retryCount: 0 },
+  { id: "7", name: "Rachel Green", phone: "+1 (555) 909-0909", email: "rachel@example.com", company: "ConsultCo", status: "do_not_call", outcome: "—", lastCall: "—", retryCount: 0 },
+  { id: "8", name: "Carlos Lopez", phone: "+1 (555) 010-1010", email: "carlos@example.com", company: "FinServ", status: "opted_out", outcome: "—", lastCall: "1 hr ago", retryCount: 1 },
 ];
 
-type ContactType = typeof initialContacts[number];
-
-// Single assigned phone number
 const assignedPhone = { id: "1", number: "+1 (555) 100-2000", label: "Primary Outbound", type: "Local", callsMade: 642, status: "live" as const };
 
 const workspacePhones = [
@@ -91,12 +98,12 @@ const knowledgeDocs = [
 ];
 
 const campaignIntegrations = [
-  { id: "hubspot", name: "HubSpot", description: "Sync contacts and deals", icon: "🔶", status: "Connected" },
-  { id: "salesforce", name: "Salesforce", description: "Log call outcomes to CRM", icon: "☁️", status: "Connected" },
-  { id: "calendar", name: "Google Calendar", description: "Book demos in available slots", icon: "📅", status: "Connected" },
-  { id: "slack", name: "Slack", description: "Demo booked notifications", icon: "💬", status: "Connected" },
-  { id: "webhooks", name: "Custom Webhooks", description: "POST results to endpoint", icon: "🔗", status: "Active" },
-  { id: "zapier", name: "Zapier", description: "Not configured yet", icon: "⚡", status: "Inactive" },
+  { id: "hubspot", name: "HubSpot", description: "Sync contacts and deals", icon: "🔶", enabled: true },
+  { id: "salesforce", name: "Salesforce", description: "Log call outcomes to CRM", icon: "☁️", enabled: true },
+  { id: "calendar", name: "Google Calendar", description: "Book demos in available slots", icon: "📅", enabled: true },
+  { id: "slack", name: "Slack", description: "Demo booked notifications", icon: "💬", enabled: true },
+  { id: "webhooks", name: "Custom Webhooks", description: "POST results to endpoint", icon: "🔗", enabled: true },
+  { id: "zapier", name: "Zapier", description: "Automation workflows", icon: "⚡", enabled: false },
 ];
 
 const volumeData = [
@@ -118,21 +125,68 @@ const costData = [
 
 const pieData = [
   { name: "Booked Demo", value: 285, color: "hsl(152 69% 40%)" },
-  { name: "Interested", value: 189, color: "hsl(15 90% 55%)" },
+  { name: "Interested", value: 189, color: "hsl(210 80% 55%)" },
   { name: "Not Interested", value: 168, color: "hsl(38 92% 50%)" },
   { name: "No Answer", value: 142, color: "hsl(220 10% 46%)" },
   { name: "Voicemail", value: 58, color: "hsl(220 10% 70%)" },
 ];
 
+const sentimentData = [
+  { name: "Positive", value: 45, color: "hsl(152 69% 40%)" },
+  { name: "Neutral", value: 32, color: "hsl(38 92% 50%)" },
+  { name: "Negative", value: 15, color: "hsl(0 72% 51%)" },
+  { name: "Unknown", value: 8, color: "hsl(220 10% 70%)" },
+];
+
+const latencyData = [
+  { date: "Mon", p50: 180, p95: 420 },
+  { date: "Tue", p50: 165, p95: 390 },
+  { date: "Wed", p50: 190, p95: 450 },
+  { date: "Thu", p50: 170, p95: 400 },
+  { date: "Fri", p50: 155, p95: 370 },
+  { date: "Sat", p50: 140, p95: 340 },
+  { date: "Sun", p50: 135, p95: 330 },
+];
+
 const campaignSettings = {
   schedule: { days: ["Mon", "Tue", "Wed", "Thu", "Fri"], startTime: "9:00 AM", endTime: "5:00 PM", timezone: "US/Eastern" },
-  retryPolicy: { maxRetries: 3, retryDelay: "30 min", retryOn: ["No answer", "Busy", "Voicemail"] },
+  retryPolicy: { maxRetries: 3, retryDelay: "30 min", retryOn: ["no_answer", "busy", "voicemail", "failed", "timeout"] },
   concurrency: 5,
   contactListSize: 1200,
   contactsRemaining: 358,
   createdAt: "Jan 15, 2025",
   lastModified: "Mar 6, 2025",
   owner: "Alex Thompson",
+  startDate: "2025-03-10",
+  endDate: "2025-04-10",
+  callerIdDisplayName: "Acme Corporation",
+};
+
+/* ── Status Machine ────────────────────────────────────── */
+
+type CampaignStatus = "draft" | "scheduled" | "live" | "paused" | "completed" | "archived";
+
+const statusTransitions: Record<CampaignStatus, { label: string; icon: any; target: CampaignStatus; variant?: string }[]> = {
+  draft: [
+    { label: "Schedule", icon: CalendarCheck, target: "scheduled" },
+    { label: "Launch Now", icon: PlayCircle, target: "live" },
+  ],
+  scheduled: [
+    { label: "Launch Now", icon: PlayCircle, target: "live" },
+    { label: "Back to Draft", icon: Edit, target: "draft" },
+  ],
+  live: [
+    { label: "Pause", icon: Pause, target: "paused" },
+    { label: "Complete", icon: StopCircle, target: "completed", variant: "outline" },
+  ],
+  paused: [
+    { label: "Resume", icon: Play, target: "live" },
+    { label: "Complete", icon: StopCircle, target: "completed", variant: "outline" },
+  ],
+  completed: [
+    { label: "Archive", icon: Archive, target: "archived", variant: "outline" },
+  ],
+  archived: [],
 };
 
 /* ── Tabs ──────────────────────────────────────────────── */
@@ -161,33 +215,58 @@ const InfoRow = forwardRef<HTMLDivElement, { label: string; value: string; mono?
 );
 InfoRow.displayName = "InfoRow";
 
+const contactStatusColors: Record<ContactStatus, string> = {
+  pending: "bg-muted text-muted-foreground",
+  calling: "bg-primary/10 text-primary",
+  called: "bg-success/10 text-success",
+  failed: "bg-destructive/10 text-destructive",
+  opted_out: "bg-warning/10 text-warning",
+  do_not_call: "bg-destructive/10 text-destructive",
+};
+
 /* ── Component ─────────────────────────────────────────── */
 
 export default function CampaignDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { id } = useParams();
-  const [isPaused, setIsPaused] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [buyNumberOpen, setBuyNumberOpen] = useState(false);
   const [uploadDocOpen, setUploadDocOpen] = useState(false);
   const [changeAgentOpen, setChangeAgentOpen] = useState(false);
   const [uploadContactsOpen, setUploadContactsOpen] = useState(false);
+  const [addContactOpen, setAddContactOpen] = useState(false);
+  const [importContactsOpen, setImportContactsOpen] = useState(false);
   const [connectIntOpen, setConnectIntOpen] = useState(false);
   const [connectTarget, setConnectTarget] = useState<any>(null);
   const [exportOpen, setExportOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [statusConfirm, setStatusConfirm] = useState<CampaignStatus | null>(null);
   const [compliance, setCompliance] = useState({
     dnc: true, record: true, tcpa: true, voicemailDetect: true, leaveVoicemail: false,
   });
+  const [integrationToggles, setIntegrationToggles] = useState<Record<string, boolean>>(
+    Object.fromEntries(campaignIntegrations.map(i => [i.id, i.enabled]))
+  );
 
   // Contact management state
   const [contacts, setContacts] = useState(initialContacts);
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "" });
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newContact, setNewContact] = useState({ name: "", phone: "", email: "" });
+  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", company: "" });
   const [contactSearch, setContactSearch] = useState("");
+  const [contactStatusFilter, setContactStatusFilter] = useState<string>("all");
+
+  const campaignData: Record<string, { name: string; status: CampaignStatus }> = {
+    "1": { name: "Q1 Outreach", status: "live" },
+    "2": { name: "Product Launch", status: "paused" },
+    "3": { name: "Survey Q1", status: "draft" },
+    "4": { name: "Re-engagement", status: "completed" },
+  };
+  const [campaignStatus, setCampaignStatus] = useState<CampaignStatus>(
+    campaignData[id || "1"]?.status || "draft"
+  );
+  const campaign = campaignData[id || "1"] || { name: `Campaign ${id}`, status: "draft" };
+  const isDraft = campaignStatus === "draft";
 
   const outcomes = [
     { label: "Booked Demo", count: 285, pct: 34, icon: UserCheck, color: "text-success" },
@@ -197,15 +276,17 @@ export default function CampaignDetail() {
     { label: "Voicemail", count: 58, pct: 7, icon: Voicemail, color: "text-muted-foreground" },
   ];
 
-  // Mock campaign lookup by id
-  const campaignData: Record<string, { name: string; status: string }> = {
-    "1": { name: "Q1 Outreach", status: "live" },
-    "2": { name: "Product Launch", status: "paused" },
-    "3": { name: "Survey Q1", status: "draft" },
-    "4": { name: "Re-engagement", status: "completed" },
+  const filteredContacts = contacts
+    .filter(c => contactStatusFilter === "all" || c.status === contactStatusFilter)
+    .filter(c => c.name.toLowerCase().includes(contactSearch.toLowerCase()) || c.phone.includes(contactSearch) || c.email.toLowerCase().includes(contactSearch.toLowerCase()));
+
+  const handleStatusTransition = (target: CampaignStatus) => {
+    setCampaignStatus(target);
+    setStatusConfirm(null);
+    toast({ title: "Campaign status updated", description: `Campaign is now ${target}.` });
   };
-  const campaign = campaignData[id || "1"] || { name: `Campaign ${id}`, status: "draft" };
-  const isDraft = campaign.status === "draft";
+
+  const availableTransitions = statusTransitions[campaignStatus] || [];
 
   return (
     <div className="space-y-5 pb-8">
@@ -223,20 +304,31 @@ export default function CampaignDetail() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold tracking-tight">{campaign.name}</h1>
-            <StatusBadge status={isPaused ? "paused" : (campaign.status as any)} />
+            <StatusBadge status={campaignStatus as any} />
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setIsPaused(!isPaused)}>
-              {isPaused ? <Play className="mr-1.5 h-3.5 w-3.5" /> : <Pause className="mr-1.5 h-3.5 w-3.5" />}
-              {isPaused ? "Resume" : "Pause"}
-            </Button>
+            {availableTransitions.map((t) => (
+              <Button
+                key={t.target}
+                variant={(t.variant as any) || "outline"}
+                size="sm"
+                onClick={() => {
+                  if (t.target === "completed" || t.target === "archived") {
+                    setStatusConfirm(t.target);
+                  } else {
+                    handleStatusTransition(t.target);
+                  }
+                }}
+              >
+                <t.icon className="mr-1.5 h-3.5 w-3.5" /> {t.label}
+              </Button>
+            ))}
             <Button variant="outline" size="sm" onClick={() => setExportOpen(true)}>
               <Download className="mr-1.5 h-3.5 w-3.5" /> Export
             </Button>
           </div>
         </div>
 
-        {/* Draft nudge bar */}
         {isDraft && (
           <div className="rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-2">
             <span className="text-sm text-warning font-medium flex-1">
@@ -276,10 +368,8 @@ export default function CampaignDetail() {
 
       {/* ══════════════════════════════════════ */}
       {/* ── DASHBOARD TAB ──────────────────── */}
-      {/* ══════════════════════════════════════ */}
       {activeTab === "dashboard" && (
         <div className="space-y-6">
-          {/* KPIs */}
           <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
             <Card className="p-4">
               <div className="flex items-center gap-3">
@@ -323,7 +413,6 @@ export default function CampaignDetail() {
             </Card>
           </div>
 
-          {/* Summary cards */}
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <Card>
               <CardHeader className="pb-2">
@@ -351,7 +440,7 @@ export default function CampaignDetail() {
                   { label: "Agent", value: campaignAgent.name, click: "agents" },
                   { label: "Phone Number", value: assignedPhone.number, click: "phones" },
                   { label: "Knowledge Docs", value: `${knowledgeDocs.length}`, click: "knowledge" },
-                  { label: "Integrations", value: `${campaignIntegrations.filter(i => i.status !== "Inactive").length} active`, click: "integrations" },
+                  { label: "Integrations", value: `${Object.values(integrationToggles).filter(Boolean).length} active`, click: "integrations" },
                   { label: "Contacts", value: `${contacts.length} / ${campaignSettings.contactListSize}`, click: "contacts" },
                 ].map((item) => (
                   <button
@@ -386,7 +475,6 @@ export default function CampaignDetail() {
             </Card>
           </div>
 
-          {/* Recent Calls */}
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold">Recent Calls</h2>
@@ -401,7 +489,6 @@ export default function CampaignDetail() {
 
       {/* ══════════════════════════════════════ */}
       {/* ── AGENTS TAB ─────────────────────── */}
-      {/* ══════════════════════════════════════ */}
       {activeTab === "agents" && (
         <div className="space-y-4">
           <div>
@@ -443,13 +530,13 @@ export default function CampaignDetail() {
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={campaign.status === "live" && !isPaused}
+                  disabled={campaignStatus === "live"}
                   onClick={() => setChangeAgentOpen(true)}
                 >
                   Change Agent
                 </Button>
               </div>
-              {campaign.status === "live" && !isPaused && (
+              {campaignStatus === "live" && (
                 <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                   <AlertTriangle className="h-3 w-3 text-warning" />
                   Pause the campaign to change the agent.
@@ -462,7 +549,6 @@ export default function CampaignDetail() {
 
       {/* ══════════════════════════════════════ */}
       {/* ── CONTACTS TAB ───────────────────── */}
-      {/* ══════════════════════════════════════ */}
       {activeTab === "contacts" && (
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -471,20 +557,22 @@ export default function CampaignDetail() {
               <p className="text-sm text-muted-foreground">{contacts.length} of {campaignSettings.contactListSize} contacts loaded · {campaignSettings.contactsRemaining} remaining</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm"><Download className="mr-1.5 h-3.5 w-3.5" /> Export</Button>
-              <Button variant="outline" size="sm" onClick={() => setUploadContactsOpen(true)}><Upload className="mr-1.5 h-3.5 w-3.5" /> Upload CSV</Button>
-              <Button size="sm" onClick={() => setShowAddForm(true)}><UserPlus className="mr-1.5 h-3.5 w-3.5" /> Add Contact</Button>
+              <Button variant="outline" size="sm"><Download className="mr-1.5 h-3.5 w-3.5" /> Export CSV</Button>
+              <Button variant="outline" size="sm" onClick={() => setImportContactsOpen(true)}><Upload className="mr-1.5 h-3.5 w-3.5" /> Import CSV</Button>
+              <Button size="sm" onClick={() => setAddContactOpen(true)}><UserPlus className="mr-1.5 h-3.5 w-3.5" /> Add Contact</Button>
             </div>
           </div>
 
           {/* Quick stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+            {([
               { label: "Total", value: contacts.length, color: "" },
+              { label: "Pending", value: contacts.filter(c => c.status === "pending").length, color: "text-muted-foreground" },
               { label: "Called", value: contacts.filter(c => c.status === "called").length, color: "text-success" },
               { label: "Failed", value: contacts.filter(c => c.status === "failed").length, color: "text-destructive" },
-              { label: "Pending", value: contacts.filter(c => c.status === "pending").length, color: "text-muted-foreground" },
-            ].map((s) => (
+              { label: "Opted Out", value: contacts.filter(c => c.status === "opted_out").length, color: "text-warning" },
+              { label: "DNC", value: contacts.filter(c => c.status === "do_not_call").length, color: "text-destructive" },
+            ]).map((s) => (
               <Card key={s.label} className="p-3 text-center">
                 <p className={cn("text-xl font-bold", s.color)}>{s.value}</p>
                 <p className="text-xs text-muted-foreground">{s.label}</p>
@@ -492,103 +580,62 @@ export default function CampaignDetail() {
             ))}
           </div>
 
-          {/* Add Contact Inline Form */}
-          {showAddForm && (
-            <Card className="border-primary/30 bg-primary/5">
-              <CardContent className="pt-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <UserPlus className="h-4 w-4 text-primary" />
-                  <h3 className="text-sm font-semibold">Add New Contact</h3>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Name *</Label>
-                    <Input placeholder="John Doe" value={newContact.name} onChange={(e) => setNewContact(p => ({ ...p, name: e.target.value }))} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Phone *</Label>
-                    <Input placeholder="+1 (555) 000-0000" value={newContact.phone} onChange={(e) => setNewContact(p => ({ ...p, phone: e.target.value }))} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Email</Label>
-                    <Input placeholder="john@example.com" value={newContact.email} onChange={(e) => setNewContact(p => ({ ...p, email: e.target.value }))} />
-                  </div>
-                </div>
-                <div className="flex gap-2 mt-3">
-                  <Button size="sm" onClick={() => {
-                    if (!newContact.name.trim() || !newContact.phone.trim()) {
-                      toast({ title: "Missing fields", description: "Name and phone are required.", variant: "destructive" });
-                      return;
-                    }
-                    const added: ContactType = {
-                      id: String(Date.now()),
-                      name: newContact.name.trim(),
-                      phone: newContact.phone.trim(),
-                      email: newContact.email.trim() || "—",
-                      status: "pending",
-                      outcome: "—",
-                      lastCall: "—",
-                    };
-                    setContacts(prev => [added, ...prev]);
-                    setNewContact({ name: "", phone: "", email: "" });
-                    setShowAddForm(false);
-                    toast({ title: "Contact added", description: `${added.name} has been added to the list.` });
-                  }}>
-                    <CheckCircle className="mr-1.5 h-3.5 w-3.5" /> Save
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => { setShowAddForm(false); setNewContact({ name: "", phone: "", email: "" }); }}>Cancel</Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Search */}
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search contacts..." value={contactSearch} onChange={(e) => setContactSearch(e.target.value)} className="pl-9" />
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input placeholder="Search contacts..." value={contactSearch} onChange={(e) => setContactSearch(e.target.value)} className="pl-9" />
+            </div>
+            <div className="flex gap-1.5 flex-wrap">
+              {["all", "pending", "calling", "called", "failed", "opted_out", "do_not_call"].map((s) => (
+                <Badge
+                  key={s}
+                  variant={contactStatusFilter === s ? "default" : "secondary"}
+                  className="cursor-pointer text-xs capitalize"
+                  onClick={() => setContactStatusFilter(s)}
+                >
+                  {s === "all" ? "All" : s === "do_not_call" ? "DNC" : s.replace("_", " ")}
+                </Badge>
+              ))}
+            </div>
           </div>
 
-          {/* Contacts Table with Inline Editing */}
+          {/* Contacts Table */}
           <div className="rounded-xl border shadow-sm overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/40 hover:bg-muted/40">
                   <TableHead className="text-xs font-semibold uppercase tracking-wider">Name</TableHead>
                   <TableHead className="hidden sm:table-cell text-xs font-semibold uppercase tracking-wider">Phone</TableHead>
-                  <TableHead className="hidden sm:table-cell text-xs font-semibold uppercase tracking-wider">Email</TableHead>
+                  <TableHead className="hidden md:table-cell text-xs font-semibold uppercase tracking-wider">Email</TableHead>
+                  <TableHead className="hidden lg:table-cell text-xs font-semibold uppercase tracking-wider">Company</TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider">Status</TableHead>
                   <TableHead className="hidden sm:table-cell text-xs font-semibold uppercase tracking-wider">Outcome</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider w-[100px]">Actions</TableHead>
+                  <TableHead className="hidden md:table-cell text-xs font-semibold uppercase tracking-wider">Retries</TableHead>
+                  <TableHead className="hidden lg:table-cell text-xs font-semibold uppercase tracking-wider">Last Call</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider w-[120px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {contacts
-                  .filter(c => c.name.toLowerCase().includes(contactSearch.toLowerCase()) || c.phone.includes(contactSearch) || c.email.toLowerCase().includes(contactSearch.toLowerCase()))
-                  .map((contact) => (
+                {filteredContacts.map((contact) => (
                   <TableRow key={contact.id} className="transition-colors hover:bg-accent/50">
                     {editingContactId === contact.id ? (
                       <>
                         <TableCell><Input className="h-8 text-sm" value={editForm.name} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} /></TableCell>
                         <TableCell className="hidden sm:table-cell"><Input className="h-8 text-sm font-mono" value={editForm.phone} onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))} /></TableCell>
-                        <TableCell className="hidden sm:table-cell"><Input className="h-8 text-sm" value={editForm.email} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} /></TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className={cn("text-xs capitalize",
-                            contact.status === "called" && "bg-success/10 text-success",
-                            contact.status === "failed" && "bg-destructive/10 text-destructive",
-                            contact.status === "pending" && "bg-muted text-muted-foreground",
-                          )}>{contact.status}</Badge>
-                        </TableCell>
+                        <TableCell className="hidden md:table-cell"><Input className="h-8 text-sm" value={editForm.email} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} /></TableCell>
+                        <TableCell className="hidden lg:table-cell"><Input className="h-8 text-sm" value={editForm.company} onChange={e => setEditForm(p => ({ ...p, company: e.target.value }))} /></TableCell>
+                        <TableCell><Badge variant="secondary" className={cn("text-xs capitalize", contactStatusColors[contact.status])}>{contact.status.replace("_", " ")}</Badge></TableCell>
                         <TableCell className="hidden sm:table-cell">{contact.outcome}</TableCell>
+                        <TableCell className="hidden md:table-cell">{contact.retryCount}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{contact.lastCall}</TableCell>
                         <TableCell>
                           <div className="flex gap-1">
                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
-                              if (!editForm.name.trim() || !editForm.phone.trim()) {
-                                toast({ title: "Missing fields", description: "Name and phone are required.", variant: "destructive" });
-                                return;
-                              }
-                              setContacts(prev => prev.map(c => c.id === contact.id ? { ...c, name: editForm.name.trim(), phone: editForm.phone.trim(), email: editForm.email.trim() || "—" } : c));
+                              if (!editForm.name.trim() || !editForm.phone.trim()) { toast({ title: "Missing fields", description: "Name and phone are required.", variant: "destructive" }); return; }
+                              setContacts(prev => prev.map(c => c.id === contact.id ? { ...c, name: editForm.name.trim(), phone: editForm.phone.trim(), email: editForm.email.trim() || "—", company: editForm.company.trim() } : c));
                               setEditingContactId(null);
-                              toast({ title: "Contact updated", description: `${editForm.name.trim()} has been updated.` });
+                              toast({ title: "Contact updated" });
                             }}>
                               <CheckCircle className="h-3.5 w-3.5 text-success" />
                             </Button>
@@ -602,28 +649,30 @@ export default function CampaignDetail() {
                       <>
                         <TableCell><span className="font-medium">{contact.name}</span></TableCell>
                         <TableCell className="hidden sm:table-cell"><span className="font-mono text-xs">{contact.phone}</span></TableCell>
-                        <TableCell className="hidden sm:table-cell"><span className="text-xs text-muted-foreground">{contact.email}</span></TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className={cn("text-xs capitalize",
-                            contact.status === "called" && "bg-success/10 text-success",
-                            contact.status === "failed" && "bg-destructive/10 text-destructive",
-                            contact.status === "pending" && "bg-muted text-muted-foreground",
-                          )}>{contact.status}</Badge>
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">{contact.outcome}</TableCell>
+                        <TableCell className="hidden md:table-cell"><span className="text-xs text-muted-foreground">{contact.email}</span></TableCell>
+                        <TableCell className="hidden lg:table-cell"><span className="text-xs">{contact.company}</span></TableCell>
+                        <TableCell><Badge variant="secondary" className={cn("text-xs capitalize", contactStatusColors[contact.status])}>{contact.status === "do_not_call" ? "DNC" : contact.status.replace("_", " ")}</Badge></TableCell>
+                        <TableCell className="hidden sm:table-cell"><span className="text-xs">{contact.outcome}</span></TableCell>
+                        <TableCell className="hidden md:table-cell"><span className="text-xs font-mono">{contact.retryCount}</span></TableCell>
+                        <TableCell className="hidden lg:table-cell"><span className="text-xs text-muted-foreground">{contact.lastCall}</span></TableCell>
                         <TableCell>
                           <div className="flex gap-1">
                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
                               setEditingContactId(contact.id);
-                              setEditForm({ name: contact.name, phone: contact.phone, email: contact.email === "—" ? "" : contact.email });
+                              setEditForm({ name: contact.name, phone: contact.phone, email: contact.email, company: contact.company });
                             }}>
                               <Edit className="h-3.5 w-3.5" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
-                              setContacts(prev => prev.filter(c => c.id !== contact.id));
-                              toast({ title: "Contact removed", description: `${contact.name} has been removed.` });
-                            }}>
-                              <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                            {contact.status !== "do_not_call" && (
+                              <Button variant="ghost" size="icon" className="h-7 w-7" title="Mark as DNC" onClick={() => {
+                                setContacts(prev => prev.map(c => c.id === contact.id ? { ...c, status: "do_not_call" as ContactStatus } : c));
+                                toast({ title: "Marked as DNC", description: `${contact.name} will not be called.` });
+                              }}>
+                                <Ban className="h-3.5 w-3.5 text-destructive" />
+                              </Button>
+                            )}
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => setDeleteTarget(`contact-${contact.id}`)}>
+                              <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </div>
                         </TableCell>
@@ -634,69 +683,83 @@ export default function CampaignDetail() {
               </TableBody>
             </Table>
           </div>
+
+          {/* Pagination placeholder */}
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <span>Showing {filteredContacts.length} of {contacts.length} contacts</span>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" disabled>Previous</Button>
+              <Button variant="outline" size="sm" disabled>Next</Button>
+            </div>
+          </div>
         </div>
       )}
 
       {/* ══════════════════════════════════════ */}
       {/* ── CALL LOGS TAB ──────────────────── */}
-      {/* ══════════════════════════════════════ */}
       {activeTab === "calls" && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold">Call Logs</h2>
-              <p className="text-sm text-muted-foreground">{campaignCalls.length} total calls for this campaign</p>
+              <p className="text-sm text-muted-foreground">{campaignCalls.length} calls in this campaign</p>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setExportOpen(true)}>
-              <Download className="mr-1.5 h-3.5 w-3.5" /> Export CSV
-            </Button>
           </div>
-          <DataTable columns={callColumns} data={campaignCalls} searchKey="contactName" searchPlaceholder="Search by name..." onRowClick={(r) => navigate(`/calls/${r.id}`)} />
+          <DataTable columns={callColumns} data={campaignCalls} searchKey="contactName" searchPlaceholder="Search calls..." onRowClick={(r) => navigate(`/calls/${r.id}`)} />
         </div>
       )}
 
       {/* ══════════════════════════════════════ */}
       {/* ── PHONE NUMBERS TAB ──────────────── */}
-      {/* ══════════════════════════════════════ */}
       {activeTab === "phones" && (
         <div className="space-y-4">
           <div>
             <h2 className="text-lg font-semibold">Calling Number</h2>
-            <p className="text-sm text-muted-foreground">The number your contacts will see when receiving calls.</p>
+            <p className="text-sm text-muted-foreground">The number your contacts will see</p>
           </div>
 
-          {/* Assigned number */}
-          <Card className="ring-1 ring-success/20">
-            <CardContent className="pt-5 space-y-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-1">Assigned Number</p>
-                  <p className="font-mono text-sm font-semibold">{assignedPhone.number}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{assignedPhone.label} · {assignedPhone.type}</p>
+          <Card>
+            <CardContent className="pt-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-lg bg-primary/10 p-2.5"><Phone className="h-5 w-5 text-primary" /></div>
+                  <div>
+                    <p className="font-mono font-semibold">{assignedPhone.number}</p>
+                    <p className="text-xs text-muted-foreground">{assignedPhone.label} · {assignedPhone.type}</p>
+                  </div>
                 </div>
-                <StatusBadge status={assignedPhone.status} />
+                <div className="flex items-center gap-3">
+                  <StatusBadge status={assignedPhone.status} />
+                  <Button variant="outline" size="sm" disabled={campaignStatus === "live"}>Change Number</Button>
+                </div>
               </div>
-              <Separator />
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>{assignedPhone.callsMade} calls made</span>
-                <Button variant="outline" size="sm" className="h-7 text-xs">Change Number</Button>
+              <Separator className="my-3" />
+              <div className="grid grid-cols-2 gap-4 text-center">
+                <div>
+                  <p className="text-xl font-bold">{assignedPhone.callsMade}</p>
+                  <p className="text-xs text-muted-foreground">Calls Made</p>
+                </div>
+                <div>
+                  <p className="text-xl font-bold">{assignedPhone.type}</p>
+                  <p className="text-xs text-muted-foreground">Number Type</p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Other workspace numbers */}
           <div>
-            <h3 className="text-sm font-medium mb-2 text-muted-foreground">Other workspace numbers</h3>
+            <h3 className="text-sm font-semibold mb-3">Other Workspace Numbers</h3>
             <div className="space-y-2">
-              {workspacePhones.map((pn) => (
-                <div key={pn.id} className="flex items-center justify-between rounded-lg border bg-card p-3">
-                  <div>
-                    <p className="font-mono text-sm">{pn.number}</p>
-                    <p className="text-xs text-muted-foreground">{pn.label} · {pn.type}</p>
+              {workspacePhones.map((p) => (
+                <div key={p.id} className="flex items-center gap-3 rounded-lg border bg-card p-3">
+                  <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-mono font-medium">{p.number}</p>
+                    <p className="text-xs text-muted-foreground">{p.label} · {p.type}</p>
                   </div>
-                  <div className="text-right">
-                    {pn.campaign !== "—" ? (
-                      <Badge variant="secondary" className="text-xs">In use · {pn.campaign}</Badge>
+                  <div>
+                    {p.campaign !== "—" ? (
+                      <Badge variant="secondary" className="text-xs">In use: {p.campaign}</Badge>
                     ) : (
                       <span className="text-xs text-muted-foreground">Available</span>
                     )}
@@ -711,7 +774,7 @@ export default function CampaignDetail() {
               <CardTitle className="text-sm uppercase tracking-wider text-muted-foreground">Caller ID Settings</CardTitle>
             </CardHeader>
             <CardContent className="divide-y divide-border">
-              <InfoRow label="Display Name" value="Acme Corporation" />
+              <InfoRow label="Display Name" value={campaignSettings.callerIdDisplayName} />
               <InfoRow label="CNAM Registration" value="Active" />
             </CardContent>
           </Card>
@@ -720,7 +783,6 @@ export default function CampaignDetail() {
 
       {/* ══════════════════════════════════════ */}
       {/* ── KNOWLEDGE BASE TAB ─────────────── */}
-      {/* ══════════════════════════════════════ */}
       {activeTab === "knowledge" && (
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -732,10 +794,7 @@ export default function CampaignDetail() {
           </div>
 
           {/* Sync Status Indicator */}
-          <div className={cn(
-            "flex items-center gap-3 rounded-lg border px-4 py-3",
-            "border-success/40 bg-success/5"
-          )}>
+          <div className={cn("flex items-center gap-3 rounded-lg border px-4 py-3", "border-success/40 bg-success/5")}>
             <div className="h-2.5 w-2.5 rounded-full bg-success shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-medium text-success">Knowledge base is synced to ElevenLabs</p>
@@ -746,8 +805,7 @@ export default function CampaignDetail() {
             </Button>
           </div>
 
-          {/* Sync warning for live campaigns */}
-          {campaign.status === "live" && (
+          {campaignStatus === "live" && (
             <div className="flex items-start gap-2 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2">
               <AlertTriangle className="h-3.5 w-3.5 text-warning mt-0.5 shrink-0" />
               <p className="text-xs text-warning">Knowledge base is out of sync. New calls will use the updated knowledge base once synced. Calls already in progress are unaffected.</p>
@@ -757,9 +815,7 @@ export default function CampaignDetail() {
           <div className="space-y-2">
             {knowledgeDocs.map((doc) => (
               <div key={doc.id} className="flex items-center gap-3 rounded-lg border bg-card p-3 hover:shadow-sm transition-shadow">
-                <div className="rounded-lg bg-primary/10 p-2 shrink-0">
-                  <FileText className="h-4 w-4 text-primary" />
-                </div>
+                <div className="rounded-lg bg-primary/10 p-2 shrink-0"><FileText className="h-4 w-4 text-primary" /></div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{doc.name}</p>
                   <p className="text-xs text-muted-foreground">{doc.size} · {doc.pages} chunks</p>
@@ -792,36 +848,32 @@ export default function CampaignDetail() {
 
       {/* ══════════════════════════════════════ */}
       {/* ── INTEGRATIONS TAB ───────────────── */}
-      {/* ══════════════════════════════════════ */}
       {activeTab === "integrations" && (
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold">Integrations</h2>
-              <p className="text-sm text-muted-foreground">{campaignIntegrations.filter(i => i.status !== "Inactive").length} active integrations for this campaign</p>
+              <h2 className="text-lg font-semibold">Campaign Integrations</h2>
+              <p className="text-sm text-muted-foreground">Toggle integrations on/off for this campaign. Manage workspace integrations on the Integrations page.</p>
             </div>
-            <Button size="sm" onClick={() => { const inactive = campaignIntegrations.find(i => i.status === "Inactive"); setConnectTarget(inactive || campaignIntegrations[0]); setConnectIntOpen(true); }}>
-              <Plus className="mr-1.5 h-3.5 w-3.5" /> Add Integration
-            </Button>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="space-y-3">
             {campaignIntegrations.map((int) => (
-              <Card key={int.id} className={cn("transition-shadow hover:shadow-md cursor-pointer", int.status !== "Inactive" && "ring-1 ring-success/20")}
-                onClick={() => { setConnectTarget(int); setConnectIntOpen(true); }}>
-                <CardContent className="pt-5 space-y-3">
+              <Card key={int.id}>
+                <CardContent className="pt-5">
                   <div className="flex items-center gap-3">
                     <span className="text-xl">{int.icon}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{int.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{int.description}</p>
+                      <p className="text-xs text-muted-foreground">{int.description}</p>
                     </div>
-                    <Badge variant={int.status === "Inactive" ? "secondary" : "default"} className={cn(
-                      "text-xs shrink-0",
-                      int.status !== "Inactive" && "bg-success/10 text-success border-0"
-                    )}>
-                      {int.status}
-                    </Badge>
+                    <Switch
+                      checked={integrationToggles[int.id]}
+                      onCheckedChange={(checked) => {
+                        setIntegrationToggles(prev => ({ ...prev, [int.id]: checked }));
+                        toast({ title: `${int.name} ${checked ? "enabled" : "disabled"}`, description: `Integration has been ${checked ? "enabled" : "disabled"} for this campaign.` });
+                      }}
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -850,7 +902,6 @@ export default function CampaignDetail() {
 
       {/* ══════════════════════════════════════ */}
       {/* ── ANALYTICS TAB ──────────────────── */}
-      {/* ══════════════════════════════════════ */}
       {activeTab === "analytics" && (
         <div className="space-y-6">
           <div>
@@ -883,30 +934,12 @@ export default function CampaignDetail() {
             </Card>
 
             <Card className="p-4 sm:p-6">
-              <h3 className="font-semibold mb-4">Cost Breakdown (Weekly)</h3>
-              <div className="h-[260px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={costData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis dataKey="date" className="text-xs" tick={{ fill: 'hsl(220 10% 46%)' }} />
-                    <YAxis className="text-xs" tick={{ fill: 'hsl(220 10% 46%)' }} tickFormatter={(v) => `$${v}`} />
-                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
-                    <Bar dataKey="telephony" fill="hsl(15 90% 55% / 0.7)" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="ai" fill="hsl(15 90% 55%)" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </Card>
-
-            <Card className="p-4 sm:p-6">
               <h3 className="font-semibold mb-4">Outcome Distribution</h3>
               <div className="h-[260px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" paddingAngle={3}>
-                      {pieData.map((entry, i) => (
-                        <Cell key={i} fill={entry.color} />
-                      ))}
+                      {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                     </Pie>
                     <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
                   </PieChart>
@@ -923,13 +956,40 @@ export default function CampaignDetail() {
             </Card>
 
             <Card className="p-4 sm:p-6">
-              <h3 className="font-semibold mb-4">Agent Performance</h3>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{campaignAgent.name}</span>
-                  <span className="text-sm text-muted-foreground">{campaignAgent.calls} calls · {campaignAgent.successRate}</span>
-                </div>
-                <Progress value={parseInt(campaignAgent.successRate)} className="h-2" />
+              <h3 className="font-semibold mb-4">Sentiment Distribution</h3>
+              <div className="h-[260px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={sentimentData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" paddingAngle={3}>
+                      {sentimentData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex flex-wrap justify-center gap-3 mt-2">
+                {sentimentData.map((item) => (
+                  <div key={item.name} className="flex items-center gap-1.5 text-xs">
+                    <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                    <span className="text-muted-foreground">{item.name}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card className="p-4 sm:p-6">
+              <h3 className="font-semibold mb-4">Response Latency</h3>
+              <div className="h-[260px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={latencyData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="date" className="text-xs" tick={{ fill: 'hsl(220 10% 46%)' }} />
+                    <YAxis className="text-xs" tick={{ fill: 'hsl(220 10% 46%)' }} tickFormatter={(v) => `${v}ms`} />
+                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
+                    <Line type="monotone" dataKey="p50" stroke="hsl(152 69% 40%)" strokeWidth={2} name="p50" dot={false} />
+                    <Line type="monotone" dataKey="p95" stroke="hsl(38 92% 50%)" strokeWidth={2} name="p95" dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </Card>
           </div>
@@ -938,7 +998,6 @@ export default function CampaignDetail() {
 
       {/* ══════════════════════════════════════ */}
       {/* ── SETTINGS TAB ───────────────────── */}
-      {/* ══════════════════════════════════════ */}
       {activeTab === "settings" && (
         <div className="space-y-6">
           <div>
@@ -957,18 +1016,14 @@ export default function CampaignDetail() {
               <CardContent className="space-y-4">
                 <div className="flex gap-1.5">
                   {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
-                    <Badge
-                      key={day}
-                      variant={campaignSettings.schedule.days.includes(day) ? "default" : "secondary"}
-                      className="text-xs px-2 py-1"
-                    >
-                      {day}
-                    </Badge>
+                    <Badge key={day} variant={campaignSettings.schedule.days.includes(day) ? "default" : "secondary"} className="text-xs px-2 py-1">{day}</Badge>
                   ))}
                 </div>
                 <div className="divide-y divide-border">
                   <InfoRow label="Calling Window" value={`${campaignSettings.schedule.startTime} – ${campaignSettings.schedule.endTime}`} />
                   <InfoRow label="Timezone" value={campaignSettings.schedule.timezone} />
+                  <InfoRow label="Start Date" value={campaignSettings.startDate} />
+                  <InfoRow label="End Date" value={campaignSettings.endDate} />
                 </div>
               </CardContent>
             </Card>
@@ -980,10 +1035,19 @@ export default function CampaignDetail() {
                   <CardTitle className="text-sm uppercase tracking-wider text-muted-foreground">Retry Policy</CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="divide-y divide-border">
-                <InfoRow label="Max Retries" value={String(campaignSettings.retryPolicy.maxRetries)} />
-                <InfoRow label="Retry Delay" value={campaignSettings.retryPolicy.retryDelay} />
-                <InfoRow label="Retry On" value={campaignSettings.retryPolicy.retryOn.join(", ")} />
+              <CardContent className="space-y-3">
+                <div className="divide-y divide-border">
+                  <InfoRow label="Max Retries" value={String(campaignSettings.retryPolicy.maxRetries)} />
+                  <InfoRow label="Retry Delay" value={campaignSettings.retryPolicy.retryDelay} />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1.5">Retry on outcomes:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {campaignSettings.retryPolicy.retryOn.map((o) => (
+                      <Badge key={o} variant="secondary" className="text-xs capitalize">{o.replace("_", " ")}</Badge>
+                    ))}
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
@@ -998,6 +1062,7 @@ export default function CampaignDetail() {
                 <InfoRow label="Max Concurrency" value={`${campaignSettings.concurrency} calls`} />
                 <InfoRow label="Contact List" value={`${campaignSettings.contactListSize} total`} />
                 <InfoRow label="Remaining" value={String(campaignSettings.contactsRemaining)} />
+                <InfoRow label="Caller ID Name" value={campaignSettings.callerIdDisplayName} />
                 <InfoRow label="Created" value={campaignSettings.createdAt} />
                 <InfoRow label="Owner" value={campaignSettings.owner} />
               </CardContent>
@@ -1007,7 +1072,7 @@ export default function CampaignDetail() {
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
                   <Volume2 className="h-4 w-4 text-muted-foreground" />
-                  <CardTitle className="text-sm uppercase tracking-wider text-muted-foreground">Compliance</CardTitle>
+                  <CardTitle className="text-sm uppercase tracking-wider text-muted-foreground">Compliance & Call Handling</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="space-y-1">
@@ -1049,31 +1114,58 @@ export default function CampaignDetail() {
       )}
 
       {/* ── Dialogs ─────────────────────────── */}
-      <BuyPhoneNumberDialog open={buyNumberOpen} onOpenChange={(open) => { setBuyNumberOpen(open); if (!open && buyNumberOpen) toast({ title: "Phone number purchased", description: "The number has been added to this campaign." }); }} />
+      <BuyPhoneNumberDialog open={buyNumberOpen} onOpenChange={(open) => { setBuyNumberOpen(open); if (!open && buyNumberOpen) toast({ title: "Phone number purchased" }); }} />
       <UploadDocumentDialog open={uploadDocOpen} onOpenChange={(open) => { setUploadDocOpen(open); if (!open && uploadDocOpen) toast({ title: "Document uploaded", description: "Knowledge base has been updated." }); }} />
       <DeleteConfirmDialog
         open={changeAgentOpen}
         onOpenChange={setChangeAgentOpen}
         title="Change Agent"
         description="Changing the agent will require re-syncing the knowledge base. The campaign will be briefly paused."
-        onConfirm={() => { setChangeAgentOpen(false); toast({ title: "Agent changed", description: "The campaign agent has been updated." }); }}
+        onConfirm={() => { setChangeAgentOpen(false); toast({ title: "Agent changed" }); }}
       />
-      <UploadContactsDialog open={uploadContactsOpen} onOpenChange={setUploadContactsOpen} onImported={(count) => toast({ title: "Contacts imported", description: `${count} contacts have been added to this campaign.` })} />
-      <ConnectIntegrationDialog open={connectIntOpen} onOpenChange={(open) => { setConnectIntOpen(open); if (!open && connectIntOpen) toast({ title: "Integration updated", description: `${connectTarget?.name || "Integration"} configuration saved.` }); }} integration={connectTarget} />
+      <AddContactDialog open={addContactOpen} onOpenChange={setAddContactOpen} onAdd={(c) => {
+        setContacts(prev => [{ id: String(Date.now()), name: c.full_name, phone: c.phone, email: c.email || "—", company: c.company || "—", status: "pending", outcome: "—", lastCall: "—", retryCount: 0 }, ...prev]);
+        toast({ title: "Contact added", description: `${c.full_name} has been added.` });
+      }} />
+      <ImportContactsDialog open={importContactsOpen} onOpenChange={setImportContactsOpen} onImported={(count) => toast({ title: "Contacts imported", description: `${count} contacts added.` })} />
+      <UploadContactsDialog open={uploadContactsOpen} onOpenChange={setUploadContactsOpen} onImported={(count) => toast({ title: "Contacts imported", description: `${count} contacts have been added.` })} />
+      <ConnectIntegrationDialog open={connectIntOpen} onOpenChange={(open) => { setConnectIntOpen(open); }} integration={connectTarget} />
       <ExportDataDialog open={exportOpen} onOpenChange={setExportOpen} title="Export Campaign Data" description="Download campaign data in your preferred format." />
       <DeleteConfirmDialog
         open={deleteTarget === "campaign"}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         title="Delete Campaign"
-        description="Are you sure you want to delete this campaign? This will remove all agents, contacts, call logs, and integrations associated with it. This action cannot be undone."
-        onConfirm={() => { setDeleteTarget(null); toast({ title: "Campaign deleted", description: "The campaign has been permanently removed." }); navigate("/campaigns"); }}
+        description="Are you sure you want to delete this campaign? This will remove all contacts, call logs, and integrations associated with it. This action cannot be undone."
+        onConfirm={() => { setDeleteTarget(null); toast({ title: "Campaign deleted" }); navigate("/campaigns"); }}
       />
       <DeleteConfirmDialog
-        open={!!deleteTarget && deleteTarget !== "campaign"}
+        open={!!deleteTarget && deleteTarget.startsWith("contact-")}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Delete Contact"
+        description="Are you sure you want to remove this contact from the campaign?"
+        onConfirm={() => {
+          const contactId = deleteTarget?.replace("contact-", "");
+          setContacts(prev => prev.filter(c => c.id !== contactId));
+          setDeleteTarget(null);
+          toast({ title: "Contact removed" });
+        }}
+      />
+      <DeleteConfirmDialog
+        open={!!deleteTarget && deleteTarget !== "campaign" && !deleteTarget.startsWith("contact-")}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         title="Remove Document"
         description={`Are you sure you want to remove "${deleteTarget}" from this campaign's knowledge base?`}
-        onConfirm={() => { toast({ title: "Document removed", description: `"${deleteTarget}" has been removed from the knowledge base.` }); setDeleteTarget(null); }}
+        onConfirm={() => { toast({ title: "Document removed" }); setDeleteTarget(null); }}
+      />
+      {/* Status transition confirmation */}
+      <DeleteConfirmDialog
+        open={!!statusConfirm}
+        onOpenChange={(open) => !open && setStatusConfirm(null)}
+        title={`${statusConfirm === "completed" ? "Complete" : "Archive"} Campaign`}
+        description={statusConfirm === "completed"
+          ? "This will stop all calling activity. Contacts not yet reached will remain pending. Are you sure?"
+          : "Archiving removes this campaign from the active list. You can still view its data. Continue?"}
+        onConfirm={() => statusConfirm && handleStatusTransition(statusConfirm)}
       />
     </div>
   );

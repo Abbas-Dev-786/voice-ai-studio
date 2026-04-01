@@ -8,6 +8,7 @@ import {
   Puzzle,
   Settings,
   Bot,
+  ScrollText,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -50,7 +51,10 @@ const navGroups = [
   },
   {
     label: "Settings",
-    items: [{ title: "Settings", url: "/settings", icon: Settings }],
+    items: [
+      { title: "Settings", url: "/settings", icon: Settings },
+      { title: "Audit Logs", url: "/settings/audit-logs", icon: ScrollText },
+    ],
   },
 ];
 
