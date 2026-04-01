@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { StatCard } from "@/components/StatCard";
-import { PhoneCall, TrendingUp, Clock, DollarSign, Zap, Timer } from "lucide-react";
+import { PhoneCall, TrendingUp, Clock, DollarSign, Zap, Timer, SmilePlus } from "lucide-react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -32,10 +32,19 @@ const latencyData = [
 ];
 
 const outcomeData = [
-  { name: "Completed", value: 72, color: "hsl(152 69% 40%)" },
-  { name: "Transferred", value: 15, color: "hsl(38 92% 50%)" },
-  { name: "Dropped", value: 8, color: "hsl(0 72% 51%)" },
-  { name: "Timeout", value: 5, color: "hsl(220 10% 46%)" },
+  { name: "Booked Demo", value: 34, color: "hsl(152 69% 40%)" },
+  { name: "Interested", value: 22, color: "hsl(210 80% 55%)" },
+  { name: "Not Interested", value: 20, color: "hsl(38 92% 50%)" },
+  { name: "No Answer", value: 12, color: "hsl(220 10% 46%)" },
+  { name: "Voicemail", value: 7, color: "hsl(220 10% 70%)" },
+  { name: "Failed", value: 5, color: "hsl(0 72% 51%)" },
+];
+
+const sentimentData = [
+  { name: "Positive", value: 45, color: "hsl(152 69% 40%)" },
+  { name: "Neutral", value: 32, color: "hsl(38 92% 50%)" },
+  { name: "Negative", value: 15, color: "hsl(0 72% 51%)" },
+  { name: "Unknown", value: 8, color: "hsl(220 10% 70%)" },
 ];
 
 const campaigns = [
@@ -45,6 +54,9 @@ const campaigns = [
   { id: "3", name: "Survey Q1" },
   { id: "4", name: "Re-engagement" },
 ];
+
+const tooltipStyle = { backgroundColor: 'hsl(0 0% 100%)', border: '1px solid hsl(30 15% 90%)', borderRadius: '8px' };
+const axisTick = { fill: 'hsl(220 10% 46%)' };
 
 export default function Analytics() {
   const [dateRange, setDateRange] = useState("7d");
@@ -98,15 +110,16 @@ export default function Analytics() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
+        {/* Conversation Volume */}
         <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
           <h3 className="font-semibold mb-4">Conversation Volume</h3>
           <div className="h-[260px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={volumeData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="date" className="text-xs" tick={{ fill: 'hsl(220 10% 46%)' }} />
-                <YAxis className="text-xs" tick={{ fill: 'hsl(220 10% 46%)' }} />
-                <Tooltip contentStyle={{ backgroundColor: 'hsl(0 0% 100%)', border: '1px solid hsl(30 15% 90%)', borderRadius: '8px' }} />
+                <XAxis dataKey="date" className="text-xs" tick={axisTick} />
+                <YAxis className="text-xs" tick={axisTick} />
+                <Tooltip contentStyle={tooltipStyle} />
                 <Area type="monotone" dataKey="success" stackId="1" stroke="hsl(152 69% 40%)" fill="hsl(152 69% 40% / 0.2)" name="Successful" />
                 <Area type="monotone" dataKey="failed" stackId="1" stroke="hsl(0 72% 51%)" fill="hsl(0 72% 51% / 0.2)" name="Failed" />
               </AreaChart>
@@ -114,15 +127,16 @@ export default function Analytics() {
           </div>
         </div>
 
+        {/* Cost Breakdown */}
         <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
           <h3 className="font-semibold mb-4">Cost Breakdown (ElevenLabs Credits)</h3>
           <div className="h-[260px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={costData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="date" className="text-xs" tick={{ fill: 'hsl(220 10% 46%)' }} />
-                <YAxis className="text-xs" tick={{ fill: 'hsl(220 10% 46%)' }} tickFormatter={(v) => `$${v}`} />
-                <Tooltip contentStyle={{ backgroundColor: 'hsl(0 0% 100%)', border: '1px solid hsl(30 15% 90%)', borderRadius: '8px' }} />
+                <XAxis dataKey="date" className="text-xs" tick={axisTick} />
+                <YAxis className="text-xs" tick={axisTick} tickFormatter={(v) => `$${v}`} />
+                <Tooltip contentStyle={tooltipStyle} />
                 <Bar dataKey="telephony" fill="hsl(220 10% 46% / 0.5)" radius={[4, 4, 0, 0]} name="Telephony" />
                 <Bar dataKey="ai" fill="hsl(15 90% 55%)" radius={[4, 4, 0, 0]} name="LLM" />
                 <Bar dataKey="tts" fill="hsl(15 90% 55% / 0.5)" radius={[4, 4, 0, 0]} name="TTS (Voice)" />
@@ -131,15 +145,16 @@ export default function Analytics() {
           </div>
         </div>
 
+        {/* Response Latency */}
         <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
           <h3 className="font-semibold mb-4">Response Latency</h3>
           <div className="h-[260px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={latencyData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="date" className="text-xs" tick={{ fill: 'hsl(220 10% 46%)' }} />
-                <YAxis className="text-xs" tick={{ fill: 'hsl(220 10% 46%)' }} tickFormatter={(v) => `${v}ms`} />
-                <Tooltip contentStyle={{ backgroundColor: 'hsl(0 0% 100%)', border: '1px solid hsl(30 15% 90%)', borderRadius: '8px' }} />
+                <XAxis dataKey="date" className="text-xs" tick={axisTick} />
+                <YAxis className="text-xs" tick={axisTick} tickFormatter={(v) => `${v}ms`} />
+                <Tooltip contentStyle={tooltipStyle} />
                 <Line type="monotone" dataKey="p50" stroke="hsl(152 69% 40%)" strokeWidth={2} name="p50" dot={false} />
                 <Line type="monotone" dataKey="p95" stroke="hsl(38 92% 50%)" strokeWidth={2} name="p95" dot={false} />
                 <Line type="monotone" dataKey="p99" stroke="hsl(0 72% 51%)" strokeWidth={2} name="p99" dot={false} />
@@ -148,8 +163,9 @@ export default function Analytics() {
           </div>
         </div>
 
+        {/* Outcome Distribution */}
         <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-          <h3 className="font-semibold mb-4">Conversation Outcomes</h3>
+          <h3 className="font-semibold mb-4">Outcome Distribution</h3>
           <div className="h-[260px] flex items-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -161,6 +177,39 @@ export default function Analytics() {
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
+          </div>
+          <div className="flex flex-wrap justify-center gap-3 mt-2">
+            {outcomeData.map((item) => (
+              <div key={item.name} className="flex items-center gap-1.5 text-xs">
+                <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                <span className="text-muted-foreground">{item.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Sentiment Distribution */}
+        <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
+          <h3 className="font-semibold mb-4">Sentiment Distribution</h3>
+          <div className="h-[260px] flex items-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={sentimentData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} dataKey="value" label={({ name, value }) => `${name} ${value}%`}>
+                  {sentimentData.map((entry, index) => (
+                    <Cell key={index} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex flex-wrap justify-center gap-3 mt-2">
+            {sentimentData.map((item) => (
+              <div key={item.name} className="flex items-center gap-1.5 text-xs">
+                <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                <span className="text-muted-foreground">{item.name}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>

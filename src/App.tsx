@@ -70,6 +70,7 @@ const App = () => (
               <Route path="/settings/billing" element={<SettingsBilling />} />
               <Route path="/settings/api" element={<SettingsAPI />} />
               <Route path="/settings/notifications" element={<SettingsNotifications />} />
+              <Route path="/settings/audit-logs" element={<AuditLogs />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
